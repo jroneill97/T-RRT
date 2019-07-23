@@ -1,1 +1,2 @@
-# Symmer_Research_python
+# Transition-based RRT
+## Autonomous vehicle pathfinding 
