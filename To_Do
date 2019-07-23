@@ -1,0 +1,30 @@
+========== Wednesday July 24th ==========
+x- Convert system to rectangular bounds rather than square
+o- Define goal so it just reaches the "end" of the highway frame
+o- Figure out how to stop from snaking between car and lane
+	- could be to define an area around the current node which detects for cars?
+
+========== Tuesday July 23rd ==========
+o- Fix adjacency issue in MatLab
+x- Incorporate minimum expansion control into T-RRT
+x- Try to solve divide by 0 error in vehicle cost function
+x- Define Barrier and Lanes
+
+========== Monday July 22nd ==========
+x- Get T-RRT "lite" to work without tuned Temperature or minimum expansion control
+x- Define function to find map cost at point on map
+	* Try to get minimum expansion control to work eventually since it minimizes computational demand
+
+========== Friday July 19th ==========
+x- Define way to incorporate cost into graph rather than just objects
+	x- Add vehicle cost
+	x- Incorporate cost into Node object
+^- Get T-RRT "lite" to work without tuned Temperature or minimum expansion control
+	* Try to get minimum expansion control to work eventually since it minimizes computational demand
+
+========== Thursday July 18th ==========
+^- Define way to incorporate cost into graph rather than just objects
+x- Determine where adjacency is defined within RRTStar code
+^- Get T-RRT "lite" to work without tuned Temperature or minimum expansion control
+	* Try to get minimum expansion control to work eventually since it minimizes computational demand
+
