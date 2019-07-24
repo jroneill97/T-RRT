@@ -1,7 +1,4 @@
-import copy
 import math
-import os
-import sys
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -25,8 +22,6 @@ class CostMap:
         self.cost_map = np.zeros((len(self.x_span), len(self.y_span)))
         self.mesh_grid = np.meshgrid(self.x_span, self.y_span)
 
-
-
     def get_cost_at_point(self, x, y):
         pass
 
@@ -36,11 +31,25 @@ class CostMap:
         raster = np.zeros((len(self.x_span), len(self.y_span)))
         for i in range(0, len(self.x_span)):
             for j in range(0, len(self.y_span)):
-                raster[i, j] = math.exp(-(((self.x_span[i] - x)**2) / \
-                                            (2*sigma**2) + ((self.y_span[j] - y) ** 2 / 2*sigma ** 2))) / vol
+                raster[i, j] = math.exp(-(((self.x_span[i] - x)**2) / (2*sigma**2) + ((self.y_span[j] - y) ** 2 / 2 * sigma ** 2))) / vol
         # X, Y = np.meshgrid(self.x_span, self.y_span)
         # raster = math.exp(-(((X - x) ** 2) / (2 * sigma ** 2) + ((Y - y) ** 2 / 2 * sigma ** 2))) / vol
         self.cost_map += raster
+
+    def vehicle_collision(self, my_vehicle, x, y, threshold=0.5):
+        X, Y = self.mesh_grid
+        x_min = x - my_vehicle.length
+        x_max = x + my_vehicle.length
+        y_min = y - my_vehicle.width
+        y_max = y + my_vehicle.width
+
+        for i in range(0, len(self.x_span)):
+            for j in range(0, len(self.y_span)):
+                if (x_min <= X[i, j]) and (X[i, j] <= x_max):
+                    if (y_min <= Y[i, j]) and (Y[i, j] <= y_max):
+                        if self.cost_map[i, j] >= threshold:
+                            return True
+        return False
 
 
 class Barrier:
@@ -74,7 +83,9 @@ class Lane:
 
                 if (x_0 <= X[i, j]) and (X[i, j] <= x_f):
                     if (y_0 <= Y[i, j]) and (Y[i, j] <= y_f):
-                        grid_map.cost_map[i, j] += -lane_cost * ((Y[i, j] - y_0) * (Y[i, j] - y_f))
+                        a = (y_0 + y_f) / 2
+                        grid_map.cost_map[i, j] += (lane_cost / ((a - y_0) * (a - y_f))) * \
+                                                   ((Y[i, j] - y_0) * (Y[i, j] - y_f))
 
 
 class Vehicle:
@@ -162,8 +173,8 @@ def main():
     Vehicle(20, 10, 0, 0, 0, map)
     # right_barrier = Barrier(0, 2.5, 100, 5, map)
     # left_barrier = Barrier(0, 22.5, 100, 25, map)
-    Lane(0, 2.5, 100, 5.5, map, lane_cost=0.3)
-    Lane(0, 6.5, 100, 9.5, map, lane_cost=0.3)
+    Lane(0, 3.5, 100, 4.5, map, lane_cost=0.25)
+    Lane(0, 7.5, 100, 8.5, map, lane_cost=0.25)
 
     fig = plt.figure()
 

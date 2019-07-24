@@ -1,6 +1,8 @@
 ========== Wednesday July 24th ==========
 x- Convert system to rectangular bounds rather than square
+o- Begin implimenting time-varying cost model to the system
 o- Define goal so it just reaches the "end" of the highway frame
+	- use a list of possible goals -> line 104 of t_rrt.py calculate the minimum distance d to use as that iteration's goal
 o- Figure out how to stop from snaking between car and lane
 	- could be to define an area around the current node which detects for cars?
 

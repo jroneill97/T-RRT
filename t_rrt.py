@@ -6,14 +6,17 @@ Original author: Atsushi Sakai(@Atsushi_twi)
 Modified for T-RRT: Jack O'Neill (jroneill@wpi.edu)
 
 """
-
+import copy
+import os
 import random
+import sys
+
 from cost_map import *
 
 import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../Software/PythonRobotics/PathPlanning/RRT")
-print(os.path.dirname(os.path.abspath(__file__)) + "/../../Software/PythonRobotics/PathPlanning/RRT")
+
 try:
     from rrt import RRT
 except ImportError:
@@ -26,6 +29,10 @@ class RRTStar(RRT):
     """
     Class for RRT Star planning
     """
+    class MyCar:
+        def __init__(self):
+            self.length = 5
+            self.width = 2
 
     class Node:
         def __init__(self, x, y):
@@ -34,11 +41,12 @@ class RRTStar(RRT):
 
             self.cost = 0.0
             self.parent = None
+            self.goals = []
 
     def __init__(self, start, goal, obstacle_list, rand_area,
-                 expand_dis=2,
+                 expand_dis=1.5,
                  goal_sample_rate=20,
-                 max_iter=5000,
+                 max_iter=100000,
                  connect_circle_dist=10.0,
                  map=CostMap(0, 50, 0, 50)
                  ):
@@ -66,6 +74,8 @@ class RRTStar(RRT):
         """
         n_fail = 0
         T = 1
+        my_car = self.MyCar()
+        print(my_car.length)
 
         self.node_list = [self.start]
         for i in range(self.max_iter):
@@ -77,9 +87,10 @@ class RRTStar(RRT):
             d, _ = self.calc_distance_and_angle(new_node, nearest_node)
             c_near = self.get_point_cost(nearest_node.x, nearest_node.y)
             c_new = self.get_point_cost(new_node.x, new_node.y)
-            [trans_test, n_fail, T] = self.transition_test(c_near, c_new, d, cmax=0.5, k=1, t=T, nFail=n_fail)
+            [trans_test, n_fail, T] = self.transition_test(c_near, c_new, d, cmax=0.5, k=2, t=T, nFail=n_fail)
 
-            if self.check_collision(new_node, self.obstacleList) and trans_test and (new_node.x >= nearest_node.x):
+            if self.check_collision(new_node, self.obstacleList) and trans_test and \
+                    not self.map.vehicle_collision(my_car, new_node.x, new_node.y, threshold=0.5):
                 near_inds = self.find_near_nodes(new_node)
                 new_node = self.choose_parent(new_node, near_inds)
 
@@ -89,11 +100,11 @@ class RRTStar(RRT):
             else:
                 n_fail += 1
 
-            if animation and i % 5 == 0:  # draw after every 5 iterations
+            if animation and i % 500 == 0:  # draw after every 5 iterations
                 self.draw_graph(rnd)
 
             if not search_until_maxiter and new_node:  # check reaching the goal
-                d, _ = self.calc_distance_and_angle(new_node, self.end)
+                d, _ = self.calc_dist_to_end(new_node)
                 if d <= self.expand_dis:
                     return self.generate_final_course(len(self.node_list) - 1)
 
@@ -229,15 +240,15 @@ def main():
     # Define map and vehicle layout
     map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
     Vehicle(30, 6, 0, 0, 0, map)
-    Vehicle(60, 2, 0, 0, 0, map)
+    # Vehicle(45, 2, 0, 0, 0, map)
     Vehicle(20, 10, 0, 0, 0, map)
     # right_barrier = Barrier(0, 2.5, 100, 5, map)
     # left_barrier = Barrier(0, 22.5, 100, 25, map)
-    Lane(0, 2.5, 100, 5.5, map, lane_cost=0.25)
-    Lane(0, 6.5, 100, 9.5, map, lane_cost=0.25)
+    Lane(0, 3.75, 100, 4.25, map, lane_cost=0.5)
+    Lane(0, 7.75, 100, 8.25, map, lane_cost=0.5)
 
-    rrt = RRTStar(start=[20, 6],
-                  goal=[50, 2],
+    rrt = RRTStar(start=[0, 6],
+                  goal=[[50, 2]],
                   rand_area=map_bounds,
                   obstacle_list=[],
                   map=map)
