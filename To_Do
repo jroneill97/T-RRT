@@ -1,7 +1,11 @@
 ========== Friday July 26th ==========
+o- Find a way to allow any end time (any t in t_array on goal point)
+	* could relate to allowing range of positions as end goal
+
+========== Friday July 26th ==========
 o- Impliment min/max accel and speed to steer function
 	- The min/max speed constraint seems to be incorrect
-o- Update transition_test
+o- change plot type
 ^- Move vehicle_collision function to a more intuitive class
 
 ========== Thursday July 25th ==========

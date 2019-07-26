@@ -34,7 +34,7 @@ class TRRT(RRT):
             self.goals = []
 
     def __init__(self, start, goal, obstacle_list, rand_area,
-                 expand_dis=1.5,
+                 expand_dis=0.5,
                  goal_sample_rate=20,
                  max_iter=100000,
                  connect_circle_dist=10.0,
