@@ -7,25 +7,15 @@ Modified for T-RRT: Jack O'Neill (jroneill@wpi.edu)
 
 """
 import copy
-import os
 import random
-import sys
-
 from cost_map import *
-
 import matplotlib.pyplot as plt
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../Software/PythonRobotics/PathPlanning/RRT")
-
-try:
-    from rrt import RRT
-except ImportError:
-    raise
+from rrt import RRT
 
 show_animation = True
 
 
-class RRTStar(RRT):
+class TRRT(RRT):
     """
     Class for RRT Star planning
     """
@@ -247,11 +237,11 @@ def main():
     Lane(0, 3.75, 100, 4.25, map, lane_cost=0.5)
     Lane(0, 7.75, 100, 8.25, map, lane_cost=0.5)
 
-    rrt = RRTStar(start=[0, 6],
-                  goal=[[50, 2]],
-                  rand_area=map_bounds,
-                  obstacle_list=[],
-                  map=map)
+    rrt = TRRT(start=[0, 6],
+               goal=[[50, 2]],
+               rand_area=map_bounds,
+               obstacle_list=[],
+               map=map)
     path = rrt.planning(animation=show_animation, search_until_maxiter=False)
 
     if path is None:

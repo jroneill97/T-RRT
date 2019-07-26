@@ -20,7 +20,7 @@ class RRT:
     Class for RRT planning
     """
 
-    class Node():
+    class Node:
         """
         RRT Node
         """
@@ -30,7 +30,6 @@ class RRT:
             self.y = y
             self.parent = None
             self.goals = []
-
 
     def __init__(self, start, goal, obstacle_list,
                  rand_area, expand_dis=1.0, goal_sample_rate=5, max_iter=500):

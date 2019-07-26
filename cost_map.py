@@ -1,6 +1,6 @@
 import math
 import numpy as np
-
+import time
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -52,6 +52,37 @@ class CostMap:
         return False
 
 
+class CostMapWithTime:
+    def __init__(self, x_0, x_f, y_0, y_f, t_step=0.01):
+        self.x_0 = x_0
+        self.x_f = x_f
+        self.y_0 = y_0
+        self.y_f = y_f
+        self.x_span = np.linspace(x_0, x_f, 100)
+        self.y_span = np.linspace(y_0, y_f, 100)
+        self.mesh_grid = np.meshgrid(self.x_span, self.y_span)
+
+        # Values specific to the 3D cost map
+        self.t = 0
+        self.t_step = t_step
+        self.t_array = []
+        self.cost_map3d = []  # format: [(cost raster, t), ... ,(cost raster, tn)]
+
+    def append_time_layer(self, map):
+        #  Inputs a cost_map with specified vehicle/barrier/lane locations and appends it to the 3D cost map
+        if len(range(self.x_0, self.x_f)) != len(range(map.x_0, map.x_f)) or \
+                len(range(self.y_0, self.y_f)) != len(range(map.y_0, map.y_f)):
+            raise Exception('Time layer must be of the same dimensions as specified')
+        self.cost_map3d.append((map.cost_map, self.t))
+        self.t_array.append(self.t)
+
+    def get_cost_at_point(self, x, y):
+        # Needs to: get the cost map at the current time layer then get_cost_at_point for that layer
+        pass
+
+    def update_time(self, t_in):
+        self.t = t_in
+
 class Barrier:
     def __init__(self, x_0, y_0, x_f, y_f, grid_map):
         self.x_0 = x_0
@@ -96,9 +127,10 @@ class Vehicle:
         self.psi = psi
         self.psi_dot = psi_dot
 
-        self.update_vehicle_position(grid_map, self.x, self.y, self.psi)
+        self.project_vehicle_cost(grid_map, self.x, self.y, self.psi)
 
-    def update_vehicle_position(self, grid_map, x_in, y_in, psi_in):
+    @staticmethod
+    def project_vehicle_cost(grid_map, x_in, y_in, psi_in):
 
         rotate = np.matrix([[math.cos(psi_in), -math.sin(psi_in)],
                             [math.sin(psi_in), math.cos(psi_in)]])
@@ -161,6 +193,12 @@ class Vehicle:
 
         return grid_map.cost_map
 
+    def get_future_position(self, grid_map, t_step):
+        self.x = self.x + self.vel * math.cos(self.psi) * t_step
+        self.y = self.y + self.vel * math.sin(self.psi) * t_step
+        self.psi = self.psi + self.psi_dot * t_step
+        return self.project_vehicle_cost(grid_map, self.x, self.y, self.psi)
+
 
 def main():
     pass
@@ -168,26 +206,35 @@ def main():
 
     # Define map and vehicle layout
     map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    Vehicle(30, 6, 0, 0, 0, map)
-    Vehicle(60, 2, 0, 0, 0, map)
-    Vehicle(20, 10, 0, 0, 0, map)
+    car1 = Vehicle(30, 6, 10, 0, 0, map)
+    car2 = Vehicle(60, 2, 1, 0, 0, map)
+    car3 = Vehicle(20, 10, 5, 0, 0, map)
     # right_barrier = Barrier(0, 2.5, 100, 5, map)
     # left_barrier = Barrier(0, 22.5, 100, 25, map)
     Lane(0, 3.5, 100, 4.5, map, lane_cost=0.25)
     Lane(0, 7.5, 100, 8.5, map, lane_cost=0.25)
 
-    fig = plt.figure()
+    map3D = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=0.1)
 
-    ax = fig.add_subplot(111, projection='3d')
-    X, Y = np.meshgrid(map.x_span, map.y_span)
 
-    ax.plot_surface(X, Y, map.cost_map, cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
-    # ax.contourf(X, Y, map.cost_map, 200, cmap='jet')
-    ax.set_xlabel('x')
-    ax.set_ylabel('y')
-    # ax.set_zlabel('z')
-    # ax.axis('equal')  # matplotlib doesn't support equal axis in 3D :(
-    plt.show()
+    for t in np.arange(0, 2, map3D.t_step):
+        plt.clf()
+        map3D.update_time(t)
+        temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
+        car1.get_future_position(temp_map, map3D.t_step)
+        car2.get_future_position(temp_map, map3D.t_step)
+        car3.get_future_position(temp_map, map3D.t_step)
+        map3D.append_time_layer(temp_map)
+        print(t)
+
+    X, Y = map.mesh_grid
+    i = 0
+    for t in map3D.t_array:
+        plt.clf()
+        # ax.plot_surface(X, Y, map.cost_map, cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+        plt.contourf(X, Y, map3D.cost_map3d[i][0], 200, cmap='jet')
+        i += 1
+        plt.pause(0.01)
 
 
 if __name__ == '__main__':

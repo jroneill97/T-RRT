@@ -1,7 +1,20 @@
+========== Friday July 26th ==========
+o- Impliment min/max accel and speed to steer function
+	- The min/max speed constraint seems to be incorrect
+o- Update transition_test
+^- Move vehicle_collision function to a more intuitive class
+
+========== Thursday July 25th ==========
+x- Begin implimenting time-varying cost model to the system
+	x- time updated externally or internally?
+	^- RRT with kinematic constraints
+^- Move vehicle_collision function to a more intuitive class
+~- Begin to clean up code
+
 ========== Wednesday July 24th ==========
 x- Convert system to rectangular bounds rather than square
-o- Begin implimenting time-varying cost model to the system
-o- Define goal so it just reaches the "end" of the highway frame
+^- Begin implimenting time-varying cost model to the system
+~- Define goal so it just reaches the "end" of the highway frame
 	- use a list of possible goals -> line 104 of t_rrt.py calculate the minimum distance d to use as that iteration's goal
 o- Figure out how to stop from snaking between car and lane
 	- could be to define an area around the current node which detects for cars?
