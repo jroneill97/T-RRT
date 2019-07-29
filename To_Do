@@ -1,12 +1,18 @@
-========== Friday July 26th ==========
-o- Find a way to allow any end time (any t in t_array on goal point)
+========== Tuesday July 30th ==========
+o- Find out why path skips to goal when vehicle is in front
+o- Add steering rate constraint
+
+========== Monday July 29th ==========
+x- Finish adding time dimension
+x- Find a way to allow any end time (any t in t_array on goal point)
 	* could relate to allowing range of positions as end goal
+^- Impliment kinematic constraints
 
 ========== Friday July 26th ==========
-o- Impliment min/max accel and speed to steer function
+^- Impliment min/max accel and speed to steer function
 	- The min/max speed constraint seems to be incorrect
-o- change plot type
-^- Move vehicle_collision function to a more intuitive class
+x- change plot type
+~- Move vehicle_collision function to a more intuitive class
 
 ========== Thursday July 25th ==========
 x- Begin implimenting time-varying cost model to the system

@@ -81,7 +81,7 @@ class CostMapWithTime:
         pass
 
     def update_time(self, t_in):
-        self.t = t_in
+        self.t = round(t_in, 3)
 
 class Barrier:
     def __init__(self, x_0, y_0, x_f, y_f, grid_map):
