@@ -32,8 +32,10 @@ class TRRT_TV(TRRT):
         def __init__(self, x, y):
             self.x = x
             self.y = y
-            self.t = 0.0
-            self.speed = 0
+            self.t = 0.0  # s
+            self.speed = 0  # m/s
+            self.accel = 0  # m/s^2
+            self.steer_rate = 0  # rad/sec
 
             self.cost = 0.0
             self.parent = None
@@ -42,7 +44,7 @@ class TRRT_TV(TRRT):
     def __init__(self, start, goal, obstacle_list, rand_area,
                  expand_dis=0.5,
                  goal_sample_rate=20,
-                 max_iter=100000,
+                 max_iter=100000000,
                  connect_circle_dist=1.0,
                  map=CostMapWithTime(0, 50, 0, 50, t_step=0.1),
                  speed_range=[0, 5],
@@ -86,24 +88,22 @@ class TRRT_TV(TRRT):
             c_near = self.get_point_cost(nearest_node.x, nearest_node.y, nearest_node.t)
             c_new = self.get_point_cost(new_node.x, new_node.y, new_node.t)
             [trans_test, n_fail, T] = self.transition_test(c_near, c_new, d, cmax=0.5, k=2, t=T, nFail=n_fail)
-
-            if trans_test:
+            if trans_test:  # and not self.map.vehicle_collision(my_car, new_node.x, new_node.y, threshold=0.5):
                 near_inds = self.find_near_nodes(new_node)
                 new_node = self.choose_parent(new_node, near_inds)
                 if new_node:
                     self.node_list.append(new_node)
                     self.rewire(new_node, near_inds)
+
+                    d, _ = self.calc_dist_to_end(new_node)
+                    if d <= self.expand_range[1]:
+                        self.end.t = new_node.t + self.map.t_step
+                        return self.generate_final_course(len(self.node_list) - 1)
             else:
                 n_fail += 1
 
-            if animation and i % 100 == 0:  # draw after every 5 iterations
+            if animation and i % 10000 == 0:  # draw after every 5 iterations
                 self.draw_graph(t=0.0, rnd=rnd)
-
-            if not search_until_maxiter and new_node:  # check reaching the goal
-                d, _ = self.calc_dist_to_end(new_node)
-                if d <= self.expand_range[1]:
-                    self.end.t = new_node.t + self.map.t_step
-                    return self.generate_final_course(len(self.node_list) - 1)
 
         print("reached max iteration")
 
@@ -133,10 +133,21 @@ class TRRT_TV(TRRT):
                      (node.y - new_node.y) ** 2) for node in self.node_list]
         time_list = [new_node.t - node.t for node in self.node_list]
         speed_list = [dist_list[i] / self.map.t_step for i in range(0, len(dist_list))]
+        accel_list = []
+        for node in self.node_list:
+            d_2, _ = self.calc_distance_and_angle(node, new_node)
+            speed_2 = d_2 / self.map.t_step
+            if node.parent:
+                d_1, _ = self.calc_distance_and_angle(node.parent, node)
+                speed_1 = d_1 / self.map.t_step
+                accel_list.append((speed_2 - speed_1) / (2 * self.map.t_step))
+            else:
+                accel_list.append(speed_2 / (2 * self.map.t_step))
         near_inds = []
         for i in range(0, len(dist_list)):
             if self.speed_range[0] <= speed_list[i] <= self.speed_range[1] and \
                     min(self.map.t_array, key=lambda temp: abs(temp - time_list[i])) == self.map.t_step:
+                print(speed_list[i])
                 near_inds.append(i)
 
         return near_inds
@@ -144,8 +155,7 @@ class TRRT_TV(TRRT):
     def get_random_point(self):
         if random.randint(0, 100) > self.goal_sample_rate:
             rnd = [round(random.uniform(self.min_rand_x, self.max_rand_x), 3),
-                   round(random.uniform(self.min_rand_y, self.max_rand_y), 3),
-                   round(random.uniform(self.map.t_array[0], self.map.t_array[-1]), 3)]
+                   round(random.uniform(self.min_rand_y, self.max_rand_y), 3)]
         else:  # goal point sampling
             rnd = [self.end.x, self.end.y, random.uniform(self.map.t_array[0], self.map.t_array[1])]  # Need to find a way to allow any end time
         return rnd
@@ -193,6 +203,7 @@ class TRRT_TV(TRRT):
                           [node.y, node.parent.y],
                           [node.t, node.parent.t],
                           "-y")
+                ax.view_init(45, ax.azim + 0.0001)
 
         plt.axis([self.min_rand_x, self.max_rand_x, self.min_rand_y, self.max_rand_y])
         ax.set_zlim3d(0, self.map.t_array[-1])
@@ -204,13 +215,13 @@ class TRRT_TV(TRRT):
 
 def main():
     map_bounds = [0, 5, 0, 5]  # [x_min, x_max, y_min, y_max]
-    t_span = [0, 3]
+    t_span = [0, 1]
     t_step = 0.1
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(0, 2.5, 1, 0, 0, initial_map)
-    car2 = Vehicle(60, 2, 1, 0, 0, initial_map)
-    car3 = Vehicle(20, 10, 5, 0, 0, initial_map)
+    # car1 = Vehicle(10, 2.5, 5, 0, 0, initial_map)
+    # car2 = Vehicle(60, 2, 1, 0, 0, initial_map)
+    # car3 = Vehicle(20, 10, 5, 0, 0, initial_map)
     # right_barrier = Barrier(0, 2.5, 100, 5, map)
     # left_barrier = Barrier(0, 22.5, 100, 25, map)
     Lane(0, 7.5, 100, 8.5, initial_map, lane_cost=0.25)
@@ -220,14 +231,14 @@ def main():
     for t in np.arange(t_span[0], t_span[1], map3d.t_step):
         map3d.update_time(t)
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-        car1.get_future_position(temp_map, map3d.t_step)
+        # car1.get_future_position(temp_map, map3d.t_step)
         # car2.get_future_position(temp_map, map3d.t_step)
         # car3.get_future_position(temp_map, map3d.t_step)
         map3d.append_time_layer(temp_map)
         print(t)
 
-    time_rrt = TRRT_TV(start=[0, 0],
-                       goal=[[5, 5]],
+    time_rrt = TRRT_TV(start=[0, 2.5],
+                       goal=[[5, 2.5]],
                        rand_area=map_bounds,
                        obstacle_list=[],
                        map=map3d)
@@ -241,14 +252,12 @@ def main():
 
     print(path)
     if show_animation:
-        for t in np.arange(t_span[0], t_span[1], t_step):
-            t_idx = list(map3d.t_array).index(min(map3d.t_array, key=lambda temp: abs(temp - t)))
+        for t in map3d.t_array:
             plt.clf()
-            plt.ion()
-            plt.contour(map3d.mesh_grid[0], map3d.mesh_grid[1], map3d.cost_map3d[t_idx][0], 20, cmap='RdGy')
-            time_rrt.draw_graph(t=0.0, rnd=None)
+            time_rrt.draw_graph(t=t, rnd=None)
             plt.plot([x for (x, y, t) in path], [y for (x, y, t) in path], [t for (x, y, t) in path], '-r')
-            plt.show(block=True)
+            plt.pause(t_step / 2)
+        plt.show(block=True)
 
 
 if __name__ == '__main__':

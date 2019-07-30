@@ -1,6 +1,10 @@
+========== Wednesday July 31th ==========
+o- Finish implimenting acceleration and steer rate constraints
+o- Clean up find_near_nodes()
+
 ========== Tuesday July 30th ==========
-o- Find out why path skips to goal when vehicle is in front
-o- Add steering rate constraint
+x- Find out why path skips to goal when vehicle is in front
+^- Add acceleration and angular rate constraints
 
 ========== Monday July 29th ==========
 x- Finish adding time dimension
