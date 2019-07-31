@@ -4,6 +4,7 @@
     <list default="true" id="6e060913-4b09-4e7d-a206-17dd8e07f422" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/To_Do" beforeDir="false" afterPath="$PROJECT_DIR$/To_Do" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cost_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/cost_map.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/t_rrt_time_varied.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt_time_varied.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -31,12 +32,6 @@
         <option value="$PROJECT_DIR$/.idea/vcs.xml" />
       </list>
     </option>
-  </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="444" />
-    <option name="y" value="314" />
-    <option name="width" value="1400" />
-    <option name="height" value="1000" />
   </component>
   <component name="ProjectId" id="1OSqQpexAdR4HBdNy2V4UtfXNGw" />
   <component name="PropertiesComponent">

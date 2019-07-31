@@ -68,6 +68,23 @@ class CostMapWithTime:
         self.t_array = []
         self.cost_map3d = []  # format: [(cost raster, t), ... ,(cost raster, tn)]
 
+    def vehicle_collision(self, my_vehicle, x, y, t, threshold=0.5):
+        X, Y = self.mesh_grid
+        x_min = x - my_vehicle.length
+        x_max = x + my_vehicle.length
+        y_min = y - my_vehicle.width
+        y_max = y + my_vehicle.width
+
+        if t <= self.t_array[-1]:
+            t_idx = list(self.t_array).index(min(self.t_array, key=lambda temp: abs(temp - t)))
+            for i in range(0, len(self.x_span)):
+                for j in range(0, len(self.y_span)):
+                    if (x_min <= X[i, j]) and (X[i, j] <= x_max):
+                        if (y_min <= Y[i, j]) and (Y[i, j] <= y_max):
+                            if self.cost_map3d[t_idx][0][i, j] >= threshold:
+                                return True
+        return False
+
     def append_time_layer(self, map):
         #  Inputs a cost_map with specified vehicle/barrier/lane locations and appends it to the 3D cost map
         if len(range(self.x_0, self.x_f)) != len(range(map.x_0, map.x_f)) or \

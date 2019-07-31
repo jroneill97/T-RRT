@@ -1,6 +1,11 @@
+========== Thursday August 1st ==========
+o- Update animation type so a car object follows path
+o- Specifying end heading angle?
+
 ========== Wednesday July 31th ==========
-o- Finish implimenting acceleration and steer rate constraints
-o- Clean up find_near_nodes()
+x- Finish implimenting acceleration and steer rate constraints
+x- Clean up find_near_nodes()
+*- Do we want a free or specified final heading?
 
 ========== Tuesday July 30th ==========
 x- Find out why path skips to goal when vehicle is in front
