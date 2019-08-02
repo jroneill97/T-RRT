@@ -11,11 +11,10 @@ References:
 
 """
 
-import copy
 import random
 from cost_map import *
 import matplotlib.pyplot as plt
-from rrt import RRT
+import json
 from t_rrt import TRRT
 
 show_animation = True
@@ -26,7 +25,28 @@ class TRRT_TV(TRRT):
     class MyCar:
         def __init__(self):
             self.length = 5
-            self.width = 2
+            self.width = 1
+
+        def plot(self, x, y, psi):
+            u = x  # x-position of the center
+            v = y  # y-position of the center
+            a = self.length  # radius on the x-axis
+            b = self.width  # radius on the y-axis
+            t = np.linspace(0, 2 * np.pi, 100)
+
+            Ell = np.array([a * np.cos(t), b * np.sin(t)])
+            # u,v removed to keep the same center location
+            R_rot = np.array([[math.cos(psi), -math.sin(psi)], [math.sin(psi), math.cos(psi)]])
+            # 2-D rotation matrix
+
+            Ell_rot = np.zeros((2, Ell.shape[1]))
+            for i in range(Ell.shape[1]):
+                Ell_rot[:, i] = np.dot(R_rot, Ell[:, i])
+
+            plt.plot(u+Ell_rot[0, :], v+Ell_rot[1, :], 'darkorange')
+            plt.grid(color='lightgray', linestyle='--')
+            plt.show()
+
 
     class Node:
         def __init__(self, x, y, speed=0.0, psi=0.0, steer_rate=0.0):
@@ -48,10 +68,10 @@ class TRRT_TV(TRRT):
                  max_iter=1000000,
                  connect_circle_dist=1.0,
                  map=CostMapWithTime(0, 50, 0, 50, t_step=0.1),
-                 speed_range=[0, 5],
-                 accel_range=[-5, 5],
-                 steer_range=[-0.0725, 0.0725],
-                 steer_rate_range=[-5, 5]
+                 speed_range=[0, 27],
+                 accel_range=[-9.8, 9.8],
+                 steer_range=[-0.025, 0.025],
+                 steer_rate_range=[-0.5, 0.5]
                  ):
         self.speed_range = speed_range
         self.accel_range = accel_range
@@ -65,6 +85,7 @@ class TRRT_TV(TRRT):
         self.expand_dis = np.sum(self.expand_range) / 3
         self.connect_circle_dist = connect_circle_dist
         self.map = map
+        self.path = []
 
     def planning(self, animation=True, search_until_maxiter=False):
         """
@@ -77,7 +98,9 @@ class TRRT_TV(TRRT):
         T = 1
         my_car = self.MyCar()
         self.start.t = 0.0
-        self.start.speed = 4
+        self.start.speed = 0.0
+        self.start.psi = 0.0
+        self.start.throttle = 0.0
         self.node_list = [self.start]
 
         for i in range(self.max_iter):
@@ -107,7 +130,7 @@ class TRRT_TV(TRRT):
             else:
                 n_fail += 1
 
-            if animation and i % 1000 == 0:  # draw after every 5 iterations
+            if animation and i % 10000 == 0:  # draw after every 5 iterations
                 self.draw_graph(t=0.0, rnd=rnd)
 
         print("reached max iteration")
@@ -160,6 +183,7 @@ class TRRT_TV(TRRT):
         #  If the node being checked is the goal node, perform this check instead of the first one
         if goal_check and \
                 self.speed_range[0] <= speed <= self.speed_range[1] and \
+                self.steer_rate_range[0] <= d_psi_dot <= self.steer_rate_range[1] and \
                 self.steer_range[0] / 2 <= d_psi <= self.steer_range[1] / 2:
             return True
 
@@ -170,6 +194,17 @@ class TRRT_TV(TRRT):
         for i in range(0, len(self.node_list)):
             if self.get_constraint_satisfication(self.node_list[i], new_node):
                 near_inds.append(i)
+                new_node.psi = math.atan2(new_node.y, new_node.x)
+                d, psi = self.calc_distance_and_angle(self.node_list[i], new_node)
+                new_node.speed = d / self.map.t_step
+                if new_node.parent:
+                    d_parent, psi_parent = self.calc_distance_and_angle(new_node.parent, new_node)
+                    speed_parent = d_parent / self.map.t_step
+                    accel = (new_node.speed - speed_parent) / (2 * self.map.t_step)
+                    new_node.throttle = accel
+                else:
+                    accel = (new_node.speed - self.start.speed) / (2 * self.map.t_step)
+                    new_node.throttle = accel
         return near_inds
 
     def get_random_point(self):
@@ -177,7 +212,7 @@ class TRRT_TV(TRRT):
             rnd = [round(random.uniform(self.min_rand_x, self.max_rand_x), 3),
                    round(random.uniform(self.min_rand_y, self.max_rand_y), 3)]
         else:  # goal point sampling
-            rnd = [self.end.x, self.end.y, random.uniform(self.map.t_array[0], self.map.t_array[1])]  # Need to find a way to allow any end time
+            rnd = [self.end.x, self.end.y]
         return rnd
 
     @staticmethod
@@ -196,13 +231,14 @@ class TRRT_TV(TRRT):
         return d, theta
 
     def generate_final_course(self, goal_ind):
-        path = [[self.end.x, self.end.y, self.end.t]]
+        path = [[self.end.x, self.end.y, self.end.t, self.end.psi, 0.0]]
         node = self.node_list[goal_ind]
-        while node.parent is not None:
-            path.append([node.x, node.y, node.t])
-            node = node.parent
-        path.append([node.x, node.y, node.t])
 
+        while node.parent is not None:
+            path.append([node.x, node.y, node.t, node.psi, node.throttle])
+            node = node.parent
+        path.append([node.x, node.y, node.t, node.psi, node.throttle])
+        self.path = path
         return path
 
     def draw_graph(self, t=0.0, rnd=None):
@@ -232,33 +268,46 @@ class TRRT_TV(TRRT):
         plt.pause(0.01)
         plt.show()
 
+    def write_to_file(self):
+        # data = {}
+        # data['path'] = self.path
+        # data['map'] = []
+        # data['map'].append({'x_dimensions': [self.map.x_0, self.map.x_f],
+        #                     'y_dimensions': [self.map.y_0, self.map.y_f],
+        #                     'lanes': })
+        print(reversed(self.path))
 
 def main():
-    map_bounds = [0, 50, 0, 5]  # [x_min, x_max, y_min, y_max]
+    map_bounds = [0, 500, 0, 14]  # [x_min, x_max, y_min, y_max]
     t_span = [0, 20]
-    t_step = 0.75
+    t_step = 1
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(15, 2.5, 5, 0, 0, initial_map)
+    # car1 = Vehicle(10, 2.5, 10, 0, 0, initial_map)
     # car2 = Vehicle(60, 2, 1, 0, 0, initial_map)
     # car3 = Vehicle(20, 10, 5, 0, 0, initial_map)
     # right_barrier = Barrier(0, 2.5, 100, 5, map)
     # left_barrier = Barrier(0, 22.5, 100, 25, map)
-    Lane(0, 7.5, 100, 8.5, initial_map, lane_cost=0.25)
+    Lane(0, 10, 500, 11, initial_map, lane_cost=0.25)
+    Lane(0, 6.5, 500, 7.5, initial_map, lane_cost=0.25)
+    Lane(0, 3, 500, 4, initial_map, lane_cost=0.25)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
     for t in np.arange(t_span[0], t_span[1], map3d.t_step):
         map3d.update_time(t)
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-        car1.get_future_position(temp_map, map3d.t_step)
+        Lane(0, 10, 500, 11, temp_map, lane_cost=0.9)
+        Lane(0, 6.5, 500, 7.5, temp_map, lane_cost=0.9)
+        Lane(0, 3, 500, 4, temp_map, lane_cost=0.9)
+        # car1.get_future_position(temp_map, map3d.t_step)
         # car2.get_future_position(temp_map, map3d.t_step)
         # car3.get_future_position(temp_map, map3d.t_step)
         map3d.append_time_layer(temp_map)
         print(t)
 
-    time_rrt = TRRT_TV(start=[0, 2.5],
-                       goal=[[50, 0.5]],
+    time_rrt = TRRT_TV(start=[0, 5.25],
+                       goal=[[500, 5.25]],
                        rand_area=map_bounds,
                        obstacle_list=[],
                        map=map3d)
@@ -269,14 +318,18 @@ def main():
         print("Cannot find path")
     else:
         print("found path!!")
+        print(path)
 
-    print(path)
+    my_car = TRRT_TV.MyCar()
     if show_animation:
         # for t in map3d.t_array:
-        plt.clf()
-        time_rrt.draw_graph(t=t, rnd=None)
-        plt.plot([x for (x, y, t) in path], [y for (x, y, t) in path], [t for (x, y, t) in path], '-r')
-        plt.pause(t_step / 2)
+        for (x, y, t, psi, throttle) in reversed(path):
+            plt.clf()
+            time_rrt.draw_graph(t=t, rnd=None)
+            plt.plot([x for (x, y, t, psi, throttle) in path], [y for (x, y, t, psi, throttle) in path],
+                     [t for (x, y, t, psi, throttle) in path], '-r')
+            my_car.plot(x, y, psi)
+            plt.pause(t_step / 2)
         plt.show(block=True)
 
 

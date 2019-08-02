@@ -1,6 +1,10 @@
-========== Thursday August 1st ==========
+========== Friday August 2nd ==========
 o- Update animation type so a car object follows path
-o- Specifying end heading angle?
+o- Output path and scenario information to a text file
+
+========== Thursday August 1st ==========
+^- Update animation type so a car object follows path
+x- Specifying end heading angle?
 
 ========== Wednesday July 31th ==========
 x- Finish implimenting acceleration and steer rate constraints
