@@ -1,6 +1,12 @@
+========== Monday August 5th ==========
+o- Get car dimensions from Carla
+o- Finish path information output function (use JSON)
+o- Tune RRT so no "unstable" paths are generated (kinematic function relating steering/throttle to current velocity)
+
 ========== Friday August 2nd ==========
-o- Update animation type so a car object follows path
-o- Output path and scenario information to a text file
+~- Update animation type so a car object follows path
+x- Output path and scenario information to a text file
+x- Generate a rudamentary highway example and output waypoints and steering/throttle info to Carla
 
 ========== Thursday August 1st ==========
 ^- Update animation type so a car object follows path
