@@ -25,7 +25,7 @@ class TRRT_TV(TRRT):
     class MyCar:
         def __init__(self):
             self.length = 5
-            self.width = 1
+            self.width = 1.5
 
         def plot(self, x, y, psi):
             u = x  # x-position of the center
@@ -69,9 +69,9 @@ class TRRT_TV(TRRT):
                  connect_circle_dist=1.0,
                  map=CostMapWithTime(0, 50, 0, 50, t_step=0.1),
                  speed_range=[0, 27],
-                 accel_range=[-9.8, 9.8],
-                 steer_range=[-0.025, 0.025],
-                 steer_rate_range=[-0.5, 0.5]
+                 accel_range=[-4, 4],
+                 steer_range=[-0.610865, 0.610865],
+                 steer_rate_range=[-0.01, 0.01]
                  ):
         self.speed_range = speed_range
         self.accel_range = accel_range
@@ -98,7 +98,7 @@ class TRRT_TV(TRRT):
         T = 1
         my_car = self.MyCar()
         self.start.t = 0.0
-        self.start.speed = 0.0
+        self.start.speed = 25.0
         self.start.psi = 0.0
         self.start.throttle = 0.0
         self.node_list = [self.start]
@@ -130,7 +130,7 @@ class TRRT_TV(TRRT):
             else:
                 n_fail += 1
 
-            if animation and i % 10000 == 0:  # draw after every 5 iterations
+            if animation and i % 1000 == 0:  # draw after every 5 iterations
                 self.draw_graph(t=0.0, rnd=rnd)
 
         print("reached max iteration")
@@ -215,6 +215,30 @@ class TRRT_TV(TRRT):
             rnd = [self.end.x, self.end.y]
         return rnd
 
+    def choose_parent(self, new_node, near_inds):
+        if not near_inds:
+            return None
+
+        # search nearest cost in near_inds
+        costs = []
+        for i in near_inds:
+            d, theta = self.calc_distance_and_angle(self.node_list[i], new_node)
+            if self.check_collision_extend(self.node_list[i], theta, d):
+                costs.append(self.node_list[i].cost + d)
+            else:
+                costs.append(float("inf"))  # the cost of collision node
+        min_cost = min(costs)
+
+        if min_cost == float("inf"):
+            print("There is no good path.(min_cost is inf)")
+            return None
+
+        new_node.cost = min_cost
+        min_ind = near_inds[costs.index(min_cost)]
+        new_node.parent = self.node_list[min_ind]
+
+        return new_node
+
     @staticmethod
     def get_nearest_list_index(node_list, rnd):
         dlist = [(node.x - rnd[0]) ** 2 + (node.y - rnd[1]) ** 2 for node in node_list]
@@ -243,93 +267,115 @@ class TRRT_TV(TRRT):
 
     def draw_graph(self, t=0.0, rnd=None):
         plt.clf()
-        ax = plt.axes(projection='3d')
+        # ax = plt.axes(projection='3d')
         plt.ion()
         t_idx = list(self.map.t_array).index(t)
 
-        plt.contour(self.map.mesh_grid[0], self.map.mesh_grid[1], self.map.cost_map3d[t_idx][0], 20, cmap='RdGy')
+        plt.contourf(self.map.mesh_grid[0], self.map.mesh_grid[1], self.map.cost_map3d[t_idx][0], 20, cmap='viridis')
         # if rnd is not None:
         #     plt.plot(rnd[0], rnd[1], "^k")
         for node in self.node_list:
             if node.parent:
-                # plt.plot([node.x, node.parent.x],
-                #          [node.y, node.parent.y],
-                #          "-y")
-                ax.plot3D([node.x, node.parent.x],
-                          [node.y, node.parent.y],
-                          [node.t, node.parent.t],
-                          "-y")
-                ax.view_init(90, 180)
+                plt.plot([node.x, node.parent.x],
+                         [node.y, node.parent.y],
+                         "-y")
+                # ax.plot3D([node.x, node.parent.x],
+                #           [node.y, node.parent.y],
+                #           [node.t, node.parent.t],
+                #           "-y")
+                # ax.view_init(90, 180)
 
         plt.axis([self.min_rand_x, self.max_rand_x, self.min_rand_y, self.max_rand_y])
-        ax.set_zlim3d(0, self.map.t_array[-1])
+        # ax.set_zlim3d(0, self.map.t_array[-1])
+        # plt.gca().set_aspect('equal', adjustable='box')
         plt.grid(True)
         plt.draw()
         plt.pause(0.01)
         plt.show()
 
-    def write_to_file(self):
-        # data = {}
-        # data['path'] = self.path
-        # data['map'] = []
-        # data['map'].append({'x_dimensions': [self.map.x_0, self.map.x_f],
-        #                     'y_dimensions': [self.map.y_0, self.map.y_f],
-        #                     'lanes': })
-        print(reversed(self.path))
+    def write_to_file(self, map3d):
+        waypoints = []
+        t = []
+        heading = []
+        throttle = []
+        temp_path = self.path
+        temp_path.reverse()
+
+        for point in temp_path:
+            waypoints.append([point[0], point[1]])
+            t.append(point[2])
+            heading.append(point[3])
+            throttle.append(point[4])
+
+        path = {'waypoints': waypoints, 'heading': heading, 'throttle': throttle}
+        cost = []
+        for idx in range(0, len(map3d.cost_map3d)):
+            cost.append(map3d.cost_map3d[idx][0].tolist())
+
+        mesh_grid = []
+        for idx in range(0, len(map3d.mesh_grid)):
+            mesh_grid.append(map3d.mesh_grid[idx].tolist())
+
+        with open('path_information.txt', 'w') as data_file:
+            json.dump({'t': t, 'path': path, 'cost': cost, 'mesh_grid': mesh_grid}, data_file,
+                      separators=(',', ':'), sort_keys=True, indent=4)
+
 
 def main():
-    map_bounds = [0, 500, 0, 14]  # [x_min, x_max, y_min, y_max]
-    t_span = [0, 20]
+    map_bounds = [0, 300, 0, 7]  # [x_min, x_max, y_min, y_max]
+    t_span = [0, 30]
     t_step = 1
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    # car1 = Vehicle(10, 2.5, 10, 0, 0, initial_map)
+    car1 = Vehicle(50, 5.25, 20, 0, 0, initial_map)
     # car2 = Vehicle(60, 2, 1, 0, 0, initial_map)
     # car3 = Vehicle(20, 10, 5, 0, 0, initial_map)
-    # right_barrier = Barrier(0, 2.5, 100, 5, map)
-    # left_barrier = Barrier(0, 22.5, 100, 25, map)
-    Lane(0, 10, 500, 11, initial_map, lane_cost=0.25)
-    Lane(0, 6.5, 500, 7.5, initial_map, lane_cost=0.25)
-    Lane(0, 3, 500, 4, initial_map, lane_cost=0.25)
+    Barrier(0, 6.5, 300, 7.5, initial_map)
+    Barrier(0, 0, 300, 0.5, initial_map)
+    Lane(0, 10, 300, 11, initial_map, lane_cost=0.25)
+    Lane(0, 6.5, 300, 7.5, initial_map, lane_cost=0.25)
+    Lane(0, 3, 300, 4, initial_map, lane_cost=0.25)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
     for t in np.arange(t_span[0], t_span[1], map3d.t_step):
         map3d.update_time(t)
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-        Lane(0, 10, 500, 11, temp_map, lane_cost=0.9)
-        Lane(0, 6.5, 500, 7.5, temp_map, lane_cost=0.9)
-        Lane(0, 3, 500, 4, temp_map, lane_cost=0.9)
-        # car1.get_future_position(temp_map, map3d.t_step)
+        Lane(0, 10.25, 300, 10.75, temp_map, lane_cost=0.25)
+        Lane(0, 6.75, 300, 7.25, temp_map, lane_cost=0.25)
+        Lane(0, 3.25, 300, 3.75, temp_map, lane_cost=0.25)
+        Barrier(0, 6.5, 300, 7, temp_map)
+        Barrier(0, 0, 300, 0.5, temp_map)
+        car1.get_future_position(temp_map, map3d.t_step)
         # car2.get_future_position(temp_map, map3d.t_step)
         # car3.get_future_position(temp_map, map3d.t_step)
         map3d.append_time_layer(temp_map)
         print(t)
 
     time_rrt = TRRT_TV(start=[0, 5.25],
-                       goal=[[500, 5.25]],
+                       goal=[[300, 2]],
                        rand_area=map_bounds,
                        obstacle_list=[],
                        map=map3d)
 
     path = time_rrt.planning(animation=show_animation, search_until_maxiter=False)
 
+    time_rrt.write_to_file(map3d)
+
     if path is None:
         print("Cannot find path")
     else:
         print("found path!!")
-        print(path)
 
     my_car = TRRT_TV.MyCar()
     if show_animation:
         # for t in map3d.t_array:
-        for (x, y, t, psi, throttle) in reversed(path):
-            plt.clf()
-            time_rrt.draw_graph(t=t, rnd=None)
-            plt.plot([x for (x, y, t, psi, throttle) in path], [y for (x, y, t, psi, throttle) in path],
-                     [t for (x, y, t, psi, throttle) in path], '-r')
-            my_car.plot(x, y, psi)
-            plt.pause(t_step / 2)
+        # for (x, y, t, psi, throttle) in reversed(path):
+        plt.clf()
+        time_rrt.draw_graph(t=t, rnd=None)
+        plt.plot([x for (x, y, t, psi, throttle) in path], [y for (x, y, t, psi, throttle) in path], '-r')
+        # my_car.plot(x, y, psi)
+        plt.pause(t_step / 2)
         plt.show(block=True)
 
 

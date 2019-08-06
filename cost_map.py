@@ -38,10 +38,10 @@ class CostMap:
 
     def vehicle_collision(self, my_vehicle, x, y, threshold=0.5):
         X, Y = self.mesh_grid
-        x_min = x - my_vehicle.length
-        x_max = x + my_vehicle.length
-        y_min = y - my_vehicle.width
-        y_max = y + my_vehicle.width
+        x_min = x - (my_vehicle.length / 2)
+        x_max = x + (my_vehicle.length / 2)
+        y_min = y - (my_vehicle.width / 2 )
+        y_max = y + (my_vehicle.width / 2 )
 
         for i in range(0, len(self.x_span)):
             for j in range(0, len(self.y_span)):
@@ -257,4 +257,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

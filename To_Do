@@ -2,6 +2,8 @@
 o- Get car dimensions from Carla
 o- Finish path information output function (use JSON)
 o- Tune RRT so no "unstable" paths are generated (kinematic function relating steering/throttle to current velocity)
+	- Find actual values for these along with Carla constraints
+o- Begin Report!! Create outline in Overleaf
 
 ========== Friday August 2nd ==========
 ~- Update animation type so a car object follows path

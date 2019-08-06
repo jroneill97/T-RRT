@@ -124,6 +124,11 @@ class TRRT(RRT):
             t /= alpha
             nFail = 0
             return [True, nFail, t]
+        if t == 0:
+            t = 0.001
+        if dij == 0:
+            dij = 0.0001
+
         p = math.exp((-(cj-ci)/dij)/(k*t))
         if random.uniform(0, 1) < p:
             return [True, nFail, t]
