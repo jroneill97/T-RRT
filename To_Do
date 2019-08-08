@@ -1,9 +1,21 @@
+========== Thursday August 8th ==========
+o- Finish text for RRT* section
+o- Make example of integral minimization and work minimization
+
+========== Thursday August 8th ==========
+x- Continue work on four way intersection example
+x- Finish text for 3D dijkstra
+x- Begin RRT* section
+
+========== Tuesday August 6th ==========
+x- Continue writing report
+x- Create 4-way scenario
+~(will write for future work)- Need "car" to turn with the branches for collision detection
+
 ========== Monday August 5th ==========
-o- Get car dimensions from Carla
-o- Finish path information output function (use JSON)
-o- Tune RRT so no "unstable" paths are generated (kinematic function relating steering/throttle to current velocity)
-	- Find actual values for these along with Carla constraints
-o- Begin Report!! Create outline in Overleaf
+x- Finish path information output function (use JSON)
+x- Incorporate physical constraints in Carla to the path planner (simple for now such as the steering curve) 
+x- Begin Report!! Create outline in Overleaf
 
 ========== Friday August 2nd ==========
 ~- Update animation type so a car object follows path

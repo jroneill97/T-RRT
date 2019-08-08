@@ -2,14 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6e060913-4b09-4e7d-a206-17dd8e07f422" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/path_information.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plot_path.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/saved_paths/lane_change_with_car.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/saved_paths/simple_lane_change.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/saved_paths/four_wait_wait_example.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/saved_paths/four_way_example.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/saved_paths/four_way_wait_example.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/saved_paths/path_information.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/To_Do" beforeDir="false" afterPath="$PROJECT_DIR$/To_Do" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cost_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/cost_map.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/t_rrt.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/path_information.txt" beforeDir="false" afterPath="$PROJECT_DIR$/path_information.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plot_path.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot_path.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/t_rrt_time_varied.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt_time_varied.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />

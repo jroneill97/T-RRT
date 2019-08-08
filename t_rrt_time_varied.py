@@ -24,8 +24,8 @@ class TRRT_TV(TRRT):
 
     class MyCar:
         def __init__(self):
-            self.length = 5
-            self.width = 1.5
+            self.length = 1
+            self.width = 1
 
         def plot(self, x, y, psi):
             u = x  # x-position of the center
@@ -65,13 +65,13 @@ class TRRT_TV(TRRT):
     def __init__(self, start, goal, obstacle_list, rand_area,
                  expand_dis=0.125,
                  goal_sample_rate=20,
-                 max_iter=1000000,
+                 max_iter=1000000000,
                  connect_circle_dist=1.0,
                  map=CostMapWithTime(0, 50, 0, 50, t_step=0.1),
                  speed_range=[0, 27],
                  accel_range=[-4, 4],
                  steer_range=[-0.610865, 0.610865],
-                 steer_rate_range=[-0.01, 0.01]
+                 steer_rate_range=[-1, 1]
                  ):
         self.speed_range = speed_range
         self.accel_range = accel_range
@@ -98,7 +98,7 @@ class TRRT_TV(TRRT):
         T = 1
         my_car = self.MyCar()
         self.start.t = 0.0
-        self.start.speed = 25.0
+        self.start.speed = 5.0
         self.start.psi = 0.0
         self.start.throttle = 0.0
         self.node_list = [self.start]
@@ -144,9 +144,9 @@ class TRRT_TV(TRRT):
     def steer(self, rnd, nearest_node):
         new_node = self.Node(rnd[0], rnd[1])
         d, theta = self.calc_distance_and_angle(nearest_node, new_node)
-        if d <= self.expand_dis:  # I set expand_dis to the mean of the expand range BTW
-            new_node.x = nearest_node.x + self.expand_dis * math.cos(theta)
-            new_node.y = nearest_node.y + self.expand_dis * math.sin(theta)
+        # if d <= self.expand_dis:  # I set expand_dis to the mean of the expand range BTW
+        #     new_node.x = nearest_node.x + self.expand_dis * math.cos(theta)
+        #     new_node.y = nearest_node.y + self.expand_dis * math.sin(theta)
 
         return new_node
 
@@ -170,7 +170,6 @@ class TRRT_TV(TRRT):
             accel = (speed - self.start.speed) / (2 * self.map.t_step)
             d_psi = psi - self.start.psi
             d_psi_dot = d_psi / (2 * self.map.t_step)
-
         #  Checks whether the specified physical constraints are met
         if not goal_check and \
                 self.speed_range[0] <= speed <= self.speed_range[1] and \
@@ -178,6 +177,9 @@ class TRRT_TV(TRRT):
                 self.steer_range[0] <= d_psi <= self.steer_range[1] and \
                 self.steer_rate_range[0] <= d_psi_dot <= self.steer_rate_range[1] and \
                 min(self.map.t_array, key=lambda temp: abs(temp - d_t)) == self.map.t_step:
+            new_node.speed = speed
+            new_node.psi = psi   # math.atan2(new_node.y, new_node.x)
+            new_node.throttle = accel
             return True
 
         #  If the node being checked is the goal node, perform this check instead of the first one
@@ -194,23 +196,15 @@ class TRRT_TV(TRRT):
         for i in range(0, len(self.node_list)):
             if self.get_constraint_satisfication(self.node_list[i], new_node):
                 near_inds.append(i)
-                new_node.psi = math.atan2(new_node.y, new_node.x)
-                d, psi = self.calc_distance_and_angle(self.node_list[i], new_node)
-                new_node.speed = d / self.map.t_step
-                if new_node.parent:
-                    d_parent, psi_parent = self.calc_distance_and_angle(new_node.parent, new_node)
-                    speed_parent = d_parent / self.map.t_step
-                    accel = (new_node.speed - speed_parent) / (2 * self.map.t_step)
-                    new_node.throttle = accel
-                else:
-                    accel = (new_node.speed - self.start.speed) / (2 * self.map.t_step)
-                    new_node.throttle = accel
         return near_inds
 
     def get_random_point(self):
         if random.randint(0, 100) > self.goal_sample_rate:
             rnd = [round(random.uniform(self.min_rand_x, self.max_rand_x), 3),
                    round(random.uniform(self.min_rand_y, self.max_rand_y), 3)]
+            while self.get_point_cost(rnd[0], rnd[1], 0) >= 1:
+                rnd = [round(random.uniform(self.min_rand_x, self.max_rand_x), 3),
+                       round(random.uniform(self.min_rand_y, self.max_rand_y), 3)]
         else:  # goal point sampling
             rnd = [self.end.x, self.end.y]
         return rnd
@@ -322,38 +316,52 @@ class TRRT_TV(TRRT):
 
 
 def main():
-    map_bounds = [0, 300, 0, 7]  # [x_min, x_max, y_min, y_max]
-    t_span = [0, 30]
-    t_step = 1
+    map_bounds = [0, 24, 14, 37]  # [x_min, x_max, y_min, y_max]
+    t_span = [0, 15]
+    t_step = 0.5
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(50, 5.25, 20, 0, 0, initial_map)
+    car1 = Vehicle(20, 20, 10, np.pi / 2, 0, initial_map)
     # car2 = Vehicle(60, 2, 1, 0, 0, initial_map)
     # car3 = Vehicle(20, 10, 5, 0, 0, initial_map)
-    Barrier(0, 6.5, 300, 7.5, initial_map)
-    Barrier(0, 0, 300, 0.5, initial_map)
-    Lane(0, 10, 300, 11, initial_map, lane_cost=0.25)
-    Lane(0, 6.5, 300, 7.5, initial_map, lane_cost=0.25)
-    Lane(0, 3, 300, 4, initial_map, lane_cost=0.25)
+    Barrier(0, 0, 15, 15, initial_map)
+    Barrier(22, 0, 37, 15, initial_map)
+    Barrier(22, 22, 37, 37, initial_map)
+    Barrier(0, 22, 15, 37, initial_map)
+
+    # lanes
+    Barrier(15, 0, 18.5, 15, initial_map)
+    Barrier(15, 22, 18.5, 37, initial_map)
+    Barrier(0, 18.5, 15, 22, initial_map)
+    Barrier(22, 37, 18.5, 22, initial_map)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
     for t in np.arange(t_span[0], t_span[1], map3d.t_step):
         map3d.update_time(t)
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-        Lane(0, 10.25, 300, 10.75, temp_map, lane_cost=0.25)
-        Lane(0, 6.75, 300, 7.25, temp_map, lane_cost=0.25)
-        Lane(0, 3.25, 300, 3.75, temp_map, lane_cost=0.25)
-        Barrier(0, 6.5, 300, 7, temp_map)
-        Barrier(0, 0, 300, 0.5, temp_map)
-        car1.get_future_position(temp_map, map3d.t_step)
+        Barrier(0, 0, 15, 15, temp_map)
+        Barrier(22, 0, 37, 15, temp_map)
+        Barrier(22, 22, 37, 37, temp_map)
+        Barrier(0, 22, 15, 37, temp_map)
+
+        #
+        Barrier(18.5, 0, 22, 15, temp_map)
+        Barrier(15, 22, 18.5, 37, temp_map)
+        Barrier(0, 18.5, 15, 22, temp_map)
+        Barrier(22, 18.5, 37, 22, temp_map)
+        print(t)
+        if t > 7:
+            car1.get_future_position(temp_map, map3d.t_step)
+        else:
+            car1 = Vehicle(20, 20, 10, np.pi / 2, 0, initial_map)
+            car1.get_future_position(temp_map, map3d.t_step)
         # car2.get_future_position(temp_map, map3d.t_step)
         # car3.get_future_position(temp_map, map3d.t_step)
         map3d.append_time_layer(temp_map)
-        print(t)
 
-    time_rrt = TRRT_TV(start=[0, 5.25],
-                       goal=[[300, 2]],
+    time_rrt = TRRT_TV(start=[0, 16.75],
+                       goal=[[20, 37]],
                        rand_area=map_bounds,
                        obstacle_list=[],
                        map=map3d)
