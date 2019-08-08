@@ -98,7 +98,7 @@ class TRRT_TV(TRRT):
         T = 1
         my_car = self.MyCar()
         self.start.t = 0.0
-        self.start.speed = 5.0
+        self.start.speed = 25
         self.start.psi = 0.0
         self.start.throttle = 0.0
         self.node_list = [self.start]
@@ -131,6 +131,7 @@ class TRRT_TV(TRRT):
                 n_fail += 1
 
             if animation and i % 1000 == 0:  # draw after every 5 iterations
+                print(i)
                 self.draw_graph(t=0.0, rnd=rnd)
 
         print("reached max iteration")
@@ -170,6 +171,7 @@ class TRRT_TV(TRRT):
             accel = (speed - self.start.speed) / (2 * self.map.t_step)
             d_psi = psi - self.start.psi
             d_psi_dot = d_psi / (2 * self.map.t_step)
+
         #  Checks whether the specified physical constraints are met
         if not goal_check and \
                 self.speed_range[0] <= speed <= self.speed_range[1] and \
@@ -318,10 +320,10 @@ class TRRT_TV(TRRT):
 def main():
     map_bounds = [0, 300, 0, 7]  # [x_min, x_max, y_min, y_max]
     t_span = [0, 20]
-    t_step = 0.25
+    t_step = 0.75
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(50, 5.25, 20, 0, 0, initial_map)
+    car1 = Vehicle(100, 5.25, 27, 0, 0, initial_map)
     # car2 = Vehicle(60, 2, 1, 0, 0, initial_map)
     # car3 = Vehicle(20, 10, 5, 0, 0, initial_map)
     Barrier(0, 6.5, 300, 7.5, initial_map)
@@ -338,7 +340,7 @@ def main():
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
         Lane(0, 10.25, 300, 10.75, temp_map, lane_cost=0.5)
         Lane(0, 6.75, 300, 7.25, temp_map, lane_cost=0.5)
-        Lane(0, 3.25, 300, 3.75, temp_map, lane_cost=0.5)
+        Lane(0, 2.25, 300, 4.75, temp_map, lane_cost=0.5)
         Barrier(0, 6.5, 300, 7, temp_map)
         Barrier(0, 0, 300, 0.5, temp_map)
         car1.get_future_position(temp_map, map3d.t_step)
