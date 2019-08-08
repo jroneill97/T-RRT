@@ -1,6 +1,7 @@
 ========== Thursday August 8th ==========
 o- Finish text for RRT* section
 o- Make example of integral minimization and work minimization
+o- Update plot_path.py so it contains a function for Adytia to convert JSON to objects
 
 ========== Thursday August 8th ==========
 x- Continue work on four way intersection example
