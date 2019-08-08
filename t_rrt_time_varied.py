@@ -24,8 +24,8 @@ class TRRT_TV(TRRT):
 
     class MyCar:
         def __init__(self):
-            self.length = 1
-            self.width = 1
+            self.length = 5
+            self.width = 2
 
         def plot(self, x, y, psi):
             u = x  # x-position of the center
@@ -71,7 +71,7 @@ class TRRT_TV(TRRT):
                  speed_range=[0, 27],
                  accel_range=[-4, 4],
                  steer_range=[-0.610865, 0.610865],
-                 steer_rate_range=[-1, 1]
+                 steer_rate_range=[-0.05, 0.05]
                  ):
         self.speed_range = speed_range
         self.accel_range = accel_range
@@ -316,52 +316,38 @@ class TRRT_TV(TRRT):
 
 
 def main():
-    map_bounds = [0, 24, 14, 37]  # [x_min, x_max, y_min, y_max]
-    t_span = [0, 15]
-    t_step = 0.5
+    map_bounds = [0, 300, 0, 7]  # [x_min, x_max, y_min, y_max]
+    t_span = [0, 20]
+    t_step = 0.25
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(20, 20, 10, np.pi / 2, 0, initial_map)
+    car1 = Vehicle(50, 5.25, 20, 0, 0, initial_map)
     # car2 = Vehicle(60, 2, 1, 0, 0, initial_map)
     # car3 = Vehicle(20, 10, 5, 0, 0, initial_map)
-    Barrier(0, 0, 15, 15, initial_map)
-    Barrier(22, 0, 37, 15, initial_map)
-    Barrier(22, 22, 37, 37, initial_map)
-    Barrier(0, 22, 15, 37, initial_map)
-
-    # lanes
-    Barrier(15, 0, 18.5, 15, initial_map)
-    Barrier(15, 22, 18.5, 37, initial_map)
-    Barrier(0, 18.5, 15, 22, initial_map)
-    Barrier(22, 37, 18.5, 22, initial_map)
+    Barrier(0, 6.5, 300, 7.5, initial_map)
+    Barrier(0, 0, 300, 0.5, initial_map)
+    Lane(0, 10, 300, 11, initial_map, lane_cost=0.5)
+    Lane(0, 6.5, 300, 7.5, initial_map, lane_cost=0.5)
+    Lane(0, 3, 300, 4, initial_map, lane_cost=0.5)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
     for t in np.arange(t_span[0], t_span[1], map3d.t_step):
+        print(t)
         map3d.update_time(t)
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-        Barrier(0, 0, 15, 15, temp_map)
-        Barrier(22, 0, 37, 15, temp_map)
-        Barrier(22, 22, 37, 37, temp_map)
-        Barrier(0, 22, 15, 37, temp_map)
-
-        #
-        Barrier(18.5, 0, 22, 15, temp_map)
-        Barrier(15, 22, 18.5, 37, temp_map)
-        Barrier(0, 18.5, 15, 22, temp_map)
-        Barrier(22, 18.5, 37, 22, temp_map)
-        print(t)
-        if t > 7:
-            car1.get_future_position(temp_map, map3d.t_step)
-        else:
-            car1 = Vehicle(20, 20, 10, np.pi / 2, 0, initial_map)
-            car1.get_future_position(temp_map, map3d.t_step)
+        Lane(0, 10.25, 300, 10.75, temp_map, lane_cost=0.5)
+        Lane(0, 6.75, 300, 7.25, temp_map, lane_cost=0.5)
+        Lane(0, 3.25, 300, 3.75, temp_map, lane_cost=0.5)
+        Barrier(0, 6.5, 300, 7, temp_map)
+        Barrier(0, 0, 300, 0.5, temp_map)
+        car1.get_future_position(temp_map, map3d.t_step)
         # car2.get_future_position(temp_map, map3d.t_step)
         # car3.get_future_position(temp_map, map3d.t_step)
         map3d.append_time_layer(temp_map)
 
-    time_rrt = TRRT_TV(start=[0, 16.75],
-                       goal=[[20, 37]],
+    time_rrt = TRRT_TV(start=[0, 5.25],
+                       goal=[[300, 5.25]],
                        rand_area=map_bounds,
                        obstacle_list=[],
                        map=map3d)

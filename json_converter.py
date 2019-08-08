@@ -24,9 +24,10 @@ class JsonData:
             self.waypoints = [[x, y] for (x, y, t, psi, throttle) in path]
             self.heading = [psi for (x, y, t, psi, throttle) in path]
             self.throttle = [throttle for (x, y, t, psi, throttle) in path]
+            self.t_step = data['t'][1] - data['t'][0]
 
     def get_path_information(self):
-        return self.waypoints, self.heading, self.throttle, self.path
+        return self.waypoints, self.heading, self.throttle, self.t_step, self.path
 
 
 def main():
