@@ -1,7 +1,7 @@
 from t_rrt_time_varied import *
 from json_converter import *
 
-path_file = "interesting_lane_change.txt"
+path_file = "path_information.txt"
 
 
 def main():
@@ -12,14 +12,14 @@ def main():
     plt.subplot(211)
     plt.plot([t for (x, y, t, psi, throttle) in path], [throttle for (x, y, t, psi, throttle) in path])
     plt.ylabel("acceleration (m/s^2)")
+    plt.xlabel("time (sec)")
 
     plt.subplot(212)
     plt.plot([t for (x, y, t, psi, throttle) in path], [(180 / np.pi) * psi for (x, y, t, psi, throttle) in path])
-    plt.xlabel("time (sec)")
     plt.ylabel("heading (deg)")
 
     while True:
-        for t_idx in range(0, len(json_data.data['t'])):
+        for t_idx in range(0, len(json_data.data['t']) - 1):
             plt.figure(2)
             plt.clf()
             plt.ion()

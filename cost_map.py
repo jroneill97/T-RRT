@@ -40,8 +40,8 @@ class CostMap:
         X, Y = self.mesh_grid
         x_min = x - (my_vehicle.length / 2)
         x_max = x + (my_vehicle.length / 2)
-        y_min = y - (my_vehicle.width / 2 )
-        y_max = y + (my_vehicle.width / 2 )
+        y_min = y - (my_vehicle.width / 2)
+        y_max = y + (my_vehicle.width / 2)
 
         for i in range(0, len(self.x_span)):
             for j in range(0, len(self.y_span)):
@@ -220,39 +220,30 @@ class Vehicle:
 
 def main():
     pass
-    map_bounds = [0, 75, 0, 12]  # [x_min, x_max, y_min, y_max]
+    map_bounds = [0, 10, 0, 4]  # [x_min, x_max, y_min, y_max]
 
     # Define map and vehicle layout
     map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(30, 6, 10, 0, 0, map)
-    car2 = Vehicle(60, 2, 1, 0, 0, map)
-    car3 = Vehicle(20, 10, 5, 0, 0, map)
+    # car1 = Vehicle(5, 2.5, 0, 0, 0, map)
     # right_barrier = Barrier(0, 2.5, 100, 5, map)
     # left_barrier = Barrier(0, 22.5, 100, 25, map)
-    Lane(0, 3.5, 100, 4.5, map, lane_cost=0.25)
-    Lane(0, 7.5, 100, 8.5, map, lane_cost=0.25)
+    Lane(0, 1, 10, 3, map, lane_cost=0.25)
+    # Lane(0, 7.5, 100, 8.5, map, lane_cost=0.25)
 
     map3D = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=0.1)
 
-
-    for t in np.arange(0, 2, map3D.t_step):
-        plt.clf()
-        map3D.update_time(t)
-        temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-        car1.get_future_position(temp_map, map3D.t_step)
-        car2.get_future_position(temp_map, map3D.t_step)
-        car3.get_future_position(temp_map, map3D.t_step)
-        map3D.append_time_layer(temp_map)
-        print(t)
-
     X, Y = map.mesh_grid
     i = 0
-    for t in map3D.t_array:
-        plt.clf()
-        # ax.plot_surface(X, Y, map.cost_map, cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
-        plt.contourf(X, Y, map3D.cost_map3d[i][0], 200, cmap='jet')
-        i += 1
-        plt.pause(0.01)
+    plt.clf()
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.plot_surface(X, Y, map.cost_map, cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0)
+    ax.set_xlabel('x (meters)')
+    ax.set_ylabel('y (meters)')
+    ax.set_zlabel('z (meters)')
+    ax.auto_scale_xyz([0, 10], [0, 4], [0, 1])
+    plt.show()
+    # fig.savefig('lane_line.png')
 
 
 if __name__ == '__main__':

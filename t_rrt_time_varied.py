@@ -24,8 +24,8 @@ class TRRT_TV(TRRT):
 
     class MyCar:
         def __init__(self):
-            self.length = 5
-            self.width = 2
+            self.length = 1
+            self.width = 1
 
         def plot(self, x, y, psi):
             u = x  # x-position of the center
@@ -64,14 +64,14 @@ class TRRT_TV(TRRT):
 
     def __init__(self, start, goal, obstacle_list, rand_area,
                  expand_dis=0.125,
-                 goal_sample_rate=20,
+                 goal_sample_rate=2,
                  max_iter=1000000000,
                  connect_circle_dist=1.0,
                  map=CostMapWithTime(0, 50, 0, 50, t_step=0.1),
                  speed_range=[0, 27],
-                 accel_range=[-4, 4],
+                 accel_range=[-8, 4],
                  steer_range=[-0.610865, 0.610865],
-                 steer_rate_range=[-0.05, 0.05]
+                 steer_rate_range=[-3, 3]
                  ):
         self.speed_range = speed_range
         self.accel_range = accel_range
@@ -86,6 +86,7 @@ class TRRT_TV(TRRT):
         self.connect_circle_dist = connect_circle_dist
         self.map = map
         self.path = []
+        self.goal_difference = [1, 1]  # Allowable area for goal to be met
 
     def planning(self, animation=True, search_until_maxiter=False):
         """
@@ -98,7 +99,7 @@ class TRRT_TV(TRRT):
         T = 1
         my_car = self.MyCar()
         self.start.t = 0.0
-        self.start.speed = 25
+        self.start.speed = 15.0
         self.start.psi = 0.0
         self.start.throttle = 0.0
         self.node_list = [self.start]
@@ -124,8 +125,8 @@ class TRRT_TV(TRRT):
                     self.node_list.append(new_node)
                     self.rewire(new_node, near_inds)
                     d, _ = self.calc_dist_to_end(new_node)
+                    self.end.t = new_node.t + self.map.t_step
                     if self.get_constraint_satisfication(new_node, self.end, goal_check=True):
-                        self.end.t = new_node.t + self.map.t_step
                         return self.generate_final_course(len(self.node_list) - 1)
             else:
                 n_fail += 1
@@ -158,37 +159,40 @@ class TRRT_TV(TRRT):
         return self.map.cost_map3d[t_idx][0][i, j]  # This is the cost at the specified time at i and j
 
     def get_constraint_satisfication(self, node, new_node, goal_check=False):
-        d, psi = self.calc_distance_and_angle(node, new_node)
         d_t = new_node.t - node.t
-        speed = d / self.map.t_step
-        if node.parent:
-            d_parent, psi_parent = self.calc_distance_and_angle(node.parent, node)
-            speed_parent = d_parent / self.map.t_step
-            accel = (speed - speed_parent) / (2 * self.map.t_step)
-            d_psi = psi - psi_parent
-            d_psi_dot = d_psi / (2 * self.map.t_step)
-        else:
-            accel = (speed - self.start.speed) / (2 * self.map.t_step)
-            d_psi = psi - self.start.psi
-            d_psi_dot = d_psi / (2 * self.map.t_step)
+        if min(self.map.t_array, key=lambda temp: abs(d_t - temp)) != self.map.t_step or \
+                d_t < 0:
+            return False
 
-        #  Checks whether the specified physical constraints are met
+        d, psi_new = self.calc_distance_and_angle(node, new_node)
+        speed = d / d_t
+        accel = (speed - node.speed) / d_t
+        #  Calculating steering and steer rate
+        d_psi = psi_new - node.psi
+        d_psi_dot = d_psi / d_t
+
         if not goal_check and \
                 self.speed_range[0] <= speed <= self.speed_range[1] and \
                 self.accel_range[0] <= accel <= self.accel_range[1] and \
                 self.steer_range[0] <= d_psi <= self.steer_range[1] and \
-                self.steer_rate_range[0] <= d_psi_dot <= self.steer_rate_range[1] and \
-                min(self.map.t_array, key=lambda temp: abs(temp - d_t)) == self.map.t_step:
+                abs(node.throttle - accel) / d_t <= 1 and \
+                self.steer_rate_range[0] <= d_psi_dot <= self.steer_rate_range[1]:
             new_node.speed = speed
-            new_node.psi = psi   # math.atan2(new_node.y, new_node.x)
+            new_node.psi = psi_new
             new_node.throttle = accel
             return True
 
         #  If the node being checked is the goal node, perform this check instead of the first one
         if goal_check and \
                 self.speed_range[0] <= speed <= self.speed_range[1] and \
+                self.accel_range[0] <= accel <= self.accel_range[1] and \
+                self.steer_range[0] <= d_psi <= self.steer_range[1] and \
                 self.steer_rate_range[0] <= d_psi_dot <= self.steer_rate_range[1] and \
-                self.steer_range[0] / 2 <= d_psi <= self.steer_range[1] / 2:
+                ((new_node.x - self.goal_difference[0]) <= node.x <= (self.goal_difference[0] + new_node.x) and
+                 (new_node.y - self.goal_difference[1]) <= node.y <= (self.goal_difference[1] + new_node.y)):
+            new_node.speed = speed
+            new_node.psi = psi_new
+            new_node.throttle = accel
             return True
 
         return False
@@ -251,6 +255,7 @@ class TRRT_TV(TRRT):
         return d, theta
 
     def generate_final_course(self, goal_ind):
+        # path = []  # Not adding goal node since it now accepts a range of locations as goal
         path = [[self.end.x, self.end.y, self.end.t, self.end.psi, 0.0]]
         node = self.node_list[goal_ind]
 
@@ -261,33 +266,50 @@ class TRRT_TV(TRRT):
         self.path = path
         return path
 
-    def draw_graph(self, t=0.0, rnd=None):
-        plt.clf()
-        # ax = plt.axes(projection='3d')
-        plt.ion()
-        t_idx = list(self.map.t_array).index(t)
+    def draw_graph(self, t=0.0, rnd=None, projection='2d'):
+        if projection == '2d':
+            plt.clf()
+            plt.ion()
+            t_idx = list(self.map.t_array).index(t)
 
-        plt.contourf(self.map.mesh_grid[0], self.map.mesh_grid[1], self.map.cost_map3d[t_idx][0], 20, cmap='viridis')
-        # if rnd is not None:
-        #     plt.plot(rnd[0], rnd[1], "^k")
-        for node in self.node_list:
-            if node.parent:
-                plt.plot([node.x, node.parent.x],
-                         [node.y, node.parent.y],
-                         "-y")
-                # ax.plot3D([node.x, node.parent.x],
-                #           [node.y, node.parent.y],
-                #           [node.t, node.parent.t],
-                #           "-y")
-                # ax.view_init(90, 180)
+            plt.contourf(self.map.mesh_grid[0], self.map.mesh_grid[1], self.map.cost_map3d[t_idx][0], 20, cmap='viridis')
+            for node in self.node_list:
+                if node.parent:
+                    plt.plot([node.x, node.parent.x],
+                             [node.y, node.parent.y],
+                             "-y")
+            plt.axis([self.min_rand_x, self.max_rand_x, self.min_rand_y, self.max_rand_y])
+            plt.grid(True)
+            plt.xlabel('x (meters)')
+            plt.ylabel('y (meters)')
+            plt.draw()
+            plt.pause(0.01)
+            plt.show()
+        else:
+            plt.clf()
+            ax = plt.axes(projection='3d')
+            plt.ion()
+            t_idx = list(self.map.t_array).index(t)
 
-        plt.axis([self.min_rand_x, self.max_rand_x, self.min_rand_y, self.max_rand_y])
-        # ax.set_zlim3d(0, self.map.t_array[-1])
-        # plt.gca().set_aspect('equal', adjustable='box')
-        plt.grid(True)
-        plt.draw()
-        plt.pause(0.01)
-        plt.show()
+            # if rnd is not None:
+            #     plt.plot(rnd[0], rnd[1], "^k")
+            plt.contour(self.map.mesh_grid[0], self.map.mesh_grid[1], self.map.cost_map3d[t_idx][0], 20,
+                         cmap='viridis')
+            for node in self.node_list:
+                if node.parent:
+                    ax.plot3D([node.x, node.parent.x],
+                              [node.y, node.parent.y],
+                              [node.t, node.parent.t],
+                              "-y")
+
+            plt.axis([self.min_rand_x, self.max_rand_x, self.min_rand_y, self.max_rand_y])
+            ax.set_zlim3d(0, self.map.t_array[-1])
+            plt.grid(True)
+            plt.xlabel('x (meters)')
+            plt.ylabel('y (meters)')
+            plt.draw()
+            plt.pause(0.01)
+            plt.show()
 
     def write_to_file(self, map3d):
         waypoints = []
@@ -318,19 +340,16 @@ class TRRT_TV(TRRT):
 
 
 def main():
-    map_bounds = [0, 300, 0, 7]  # [x_min, x_max, y_min, y_max]
+    map_bounds = [0, 37, 0, 37]  # [x_min, x_max, y_min, y_max]
     t_span = [0, 20]
-    t_step = 0.75
+    t_step = 0.5
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(100, 5.25, 27, 0, 0, initial_map)
-    # car2 = Vehicle(60, 2, 1, 0, 0, initial_map)
-    # car3 = Vehicle(20, 10, 5, 0, 0, initial_map)
-    Barrier(0, 6.5, 300, 7.5, initial_map)
-    Barrier(0, 0, 300, 0.5, initial_map)
-    Lane(0, 10, 300, 11, initial_map, lane_cost=0.5)
-    Lane(0, 6.5, 300, 7.5, initial_map, lane_cost=0.5)
-    Lane(0, 3, 300, 4, initial_map, lane_cost=0.5)
+    car1 = Vehicle(20, 12.5, 2.5, np.pi / 2, 0, initial_map)
+    Barrier(0, 0, 15, 15, initial_map)
+    Barrier(0, 18.5, 18.5, 37, initial_map)
+    Barrier(18.5, 0, 37, 15, initial_map)
+    Barrier(22, 18.5, 37, 37, initial_map)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
@@ -338,18 +357,16 @@ def main():
         print(t)
         map3d.update_time(t)
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-        Lane(0, 10.25, 300, 10.75, temp_map, lane_cost=0.5)
-        Lane(0, 6.75, 300, 7.25, temp_map, lane_cost=0.5)
-        Lane(0, 2.25, 300, 4.75, temp_map, lane_cost=0.5)
-        Barrier(0, 6.5, 300, 7, temp_map)
-        Barrier(0, 0, 300, 0.5, temp_map)
+
+        Barrier(0, 0, 15, 15, temp_map)
+        Barrier(0, 18.5, 18.5, 37, temp_map)
+        Barrier(18.5, 0, 37, 15, temp_map)
+        Barrier(22, 18.5, 37, 37, temp_map)
         car1.get_future_position(temp_map, map3d.t_step)
-        # car2.get_future_position(temp_map, map3d.t_step)
-        # car3.get_future_position(temp_map, map3d.t_step)
         map3d.append_time_layer(temp_map)
 
-    time_rrt = TRRT_TV(start=[0, 5.25],
-                       goal=[[300, 5.25]],
+    time_rrt = TRRT_TV(start=[0, 16.75],
+                       goal=[[37, 16.75]],
                        rand_area=map_bounds,
                        obstacle_list=[],
                        map=map3d)
@@ -368,11 +385,13 @@ def main():
         # for t in map3d.t_array:
         # for (x, y, t, psi, throttle) in reversed(path):
         plt.clf()
+        fig = plt.figure()
         time_rrt.draw_graph(t=t, rnd=None)
         plt.plot([x for (x, y, t, psi, throttle) in path], [y for (x, y, t, psi, throttle) in path], '-r')
         # my_car.plot(x, y, psi)
         plt.pause(t_step / 2)
         plt.show(block=True)
+        fig.savefig('path_output.png')
 
 
 if __name__ == '__main__':
