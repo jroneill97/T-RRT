@@ -90,7 +90,7 @@ class TRRT(RRT):
             else:
                 n_fail += 1
 
-            if animation and i % 500 == 0:  # draw after every 5 iterations
+            if animation and i % 1 == 0:  # draw after every 5 iterations
                 self.draw_graph(rnd)
 
             if not search_until_maxiter and new_node:  # check reaching the goal
@@ -230,20 +230,20 @@ class TRRT(RRT):
 def main():
     print("Start " + __file__)
 
-    map_bounds = [0, 50, 2, 10]  # [x_min, x_max, y_min, y_max]
+    map_bounds = [0, 25, 0, 25]  # [x_min, x_max, y_min, y_max]
 
     # Define map and vehicle layout
     map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    Vehicle(30, 6, 0, 0, 0, map)
-    # Vehicle(45, 2, 0, 0, 0, map)
-    Vehicle(20, 10, 0, 0, 0, map)
-    # right_barrier = Barrier(0, 2.5, 100, 5, map)
-    # left_barrier = Barrier(0, 22.5, 100, 25, map)
-    Lane(0, 3.75, 100, 4.25, map, lane_cost=0.5)
-    Lane(0, 7.75, 100, 8.25, map, lane_cost=0.5)
+    Vehicle(25/2, 25/2, 0, 0, 0, map)
+    # # Vehicle(45, 2, 0, 0, 0, map)
+    # Vehicle(20, 10, 0, 0, 0, map)
+    # # right_barrier = Barrier(0, 2.5, 100, 5, map)
+    # # left_barrier = Barrier(0, 22.5, 100, 25, map)
+    # Lane(0, 3.75, 100, 4.25, map, lane_cost=0.5)
+    # Lane(0, 7.75, 100, 8.25, map, lane_cost=0.5)
 
-    rrt = TRRT(start=[0, 6],
-               goal=[[50, 2]],
+    rrt = TRRT(start=[0, 0],
+               goal=[[25, 25]],
                rand_area=map_bounds,
                obstacle_list=[],
                map=map)

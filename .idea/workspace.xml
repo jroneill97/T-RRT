@@ -2,20 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6e060913-4b09-4e7d-a206-17dd8e07f422" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/saved_paths/example_of_minimal_work_flaw.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/saved_paths/four_way_intersection.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/saved_paths/updated_kinematics.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/videos_and_images/four_way_intersection.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/3D Example.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T_RRT_example.png" beforeDir="false" afterPath="$PROJECT_DIR$/videos_and_images/T_RRT_example.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/To_Do" beforeDir="false" afterPath="$PROJECT_DIR$/To_Do" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cost_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/cost_map.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/path_information.txt" beforeDir="false" afterPath="$PROJECT_DIR$/path_information.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plot_path.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot_path.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/saved_paths/path_information.txt" beforeDir="false" afterPath="$PROJECT_DIR$/saved_paths/path_information.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/t_rrt_time_varied.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt_time_varied.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/t_rrt.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -65,7 +53,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.plot_path">
+  <component name="RunManager" selected="Python.t_rrt">
     <configuration name="cost_map" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="T-RRT" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -173,10 +161,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.t_rrt" />
         <item itemvalue="Python.t_rrt_time_varied" />
         <item itemvalue="Python.plot_path" />
         <item itemvalue="Python.cost_map" />
-        <item itemvalue="Python.t_rrt" />
         <item itemvalue="Python.rrt" />
       </list>
     </recent_temporary>
