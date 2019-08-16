@@ -109,36 +109,36 @@ class TRRT(RRT):
     def min_expand_control(self, c_near, c_new, d_near_new):
         pass
 
-    def transition_test(self, ci, cj, dij, cmax, k, t, nFail):
+    def transition_test(self, ci, cj, dij, cmax, k, t, n_fail):
         """
         Note: This does not include nFail or auto-tuning of
         temperature. Refer to pg. 640 of "SAMPLING-BASED PATH PLANNING ON CONFIGURATION-SPACE COSTMAPS"
         to incorporate these features into this function
         """
         alpha = 2
-        nFail_max = 100
+        n_fail_max = 100
 
         if cj > cmax:
-            return [False, nFail, t]
+            return [False, n_fail, t]
         if cj < ci:
             t /= alpha
-            nFail = 0
-            return [True, nFail, t]
+            n_fail = 0
+            return [True, n_fail, t]
         if t == 0:
-            t = 0.001
+            t = 0.0001
         if dij == 0:
             dij = 0.0001
 
         p = math.exp((-(cj-ci)/dij)/(k*t))
         if random.uniform(0, 1) < p:
-            return [True, nFail, t]
+            return [True, n_fail, t]
         else:
-            if nFail > nFail_max:
+            if n_fail > n_fail_max:
                 t *= alpha
-                nFail = 0
+                n_fail = 0
             else:
-                nFail += 1
-            return [False, nFail, t]
+                n_fail += 1
+            return [False, n_fail, t]
 
     def get_point_cost(self, x, y):
         j = list(self.map.x_span).index(min(self.map.x_span, key=lambda temp: abs(temp - x)))

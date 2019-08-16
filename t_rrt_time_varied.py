@@ -65,13 +65,13 @@ class TRRT_TV(TRRT):
     def __init__(self, start, goal, obstacle_list, rand_area,
                  expand_dis=0.125,
                  goal_sample_rate=2,
-                 max_iter=1000000000,
+                 max_iter=10000000,
                  connect_circle_dist=1.0,
                  map=CostMapWithTime(0, 50, 0, 50, t_step=0.1),
                  speed_range=[0, 27],
                  accel_range=[-8, 4],
                  steer_range=[-0.610865, 0.610865],
-                 steer_rate_range=[-3, 3]
+                 steer_rate_range=[-0.2, 0.2]
                  ):
         self.speed_range = speed_range
         self.accel_range = accel_range
@@ -99,7 +99,7 @@ class TRRT_TV(TRRT):
         T = 1
         my_car = self.MyCar()
         self.start.t = 0.0
-        self.start.speed = 15.0
+        self.start.speed = 25.0
         self.start.psi = 0.0
         self.start.throttle = 0.0
         self.node_list = [self.start]
@@ -117,7 +117,7 @@ class TRRT_TV(TRRT):
             d, _ = self.calc_distance_and_angle(new_node, nearest_node)
             c_near = self.get_point_cost(nearest_node.x, nearest_node.y, nearest_node.t)
             c_new = self.get_point_cost(new_node.x, new_node.y, new_node.t)
-            [trans_test, n_fail, T] = self.transition_test(c_near, c_new, d, cmax=0.5, k=2, t=T, nFail=n_fail)
+            [trans_test, n_fail, T] = self.transition_test(c_near, c_new, d, cmax=0.5, k=2, t=T, n_fail=n_fail)
             if trans_test and not self.map.vehicle_collision(my_car, new_node.x, new_node.y, new_node.t, threshold=0.5):
                 near_inds = self.find_near_nodes(new_node)
                 new_node = self.choose_parent(new_node, near_inds)
@@ -175,8 +175,8 @@ class TRRT_TV(TRRT):
                 self.speed_range[0] <= speed <= self.speed_range[1] and \
                 self.accel_range[0] <= accel <= self.accel_range[1] and \
                 self.steer_range[0] <= d_psi <= self.steer_range[1] and \
-                abs(node.throttle - accel) / d_t <= 1 and \
                 self.steer_rate_range[0] <= d_psi_dot <= self.steer_rate_range[1]:
+            # abs(node.throttle - accel) / d_t <= 1 and \
             new_node.speed = speed
             new_node.psi = psi_new
             new_node.throttle = accel
@@ -340,16 +340,15 @@ class TRRT_TV(TRRT):
 
 
 def main():
-    map_bounds = [0, 37, 0, 37]  # [x_min, x_max, y_min, y_max]
+    map_bounds = [0, 300, 0, 7]  # [x_min, x_max, y_min, y_max]
     t_span = [0, 20]
     t_step = 0.5
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(20, 12.5, 2.5, np.pi / 2, 0, initial_map)
-    Barrier(0, 0, 15, 15, initial_map)
-    Barrier(0, 18.5, 18.5, 37, initial_map)
-    Barrier(18.5, 0, 37, 15, initial_map)
-    Barrier(22, 18.5, 37, 37, initial_map)
+    car1 = Vehicle(100, 5, 15, 0, 0, initial_map)
+    Barrier(0, 0, 300, 0.5, initial_map)
+    Barrier(0, 6.5, 300, 7, initial_map)
+    Lane(0, 3.25, 300, 3.75, initial_map, lane_cost=0.25)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
@@ -358,15 +357,14 @@ def main():
         map3d.update_time(t)
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
 
-        Barrier(0, 0, 15, 15, temp_map)
-        Barrier(0, 18.5, 18.5, 37, temp_map)
-        Barrier(18.5, 0, 37, 15, temp_map)
-        Barrier(22, 18.5, 37, 37, temp_map)
+        Barrier(0, 0, 300, 0.5, temp_map)
+        Barrier(0, 6.5, 300, 7, temp_map)
+        Lane(0, 3.25, 300, 3.75, temp_map, lane_cost=0.25)
         car1.get_future_position(temp_map, map3d.t_step)
         map3d.append_time_layer(temp_map)
 
-    time_rrt = TRRT_TV(start=[0, 16.75],
-                       goal=[[37, 16.75]],
+    time_rrt = TRRT_TV(start=[0, 5],
+                       goal=[[300, 5]],
                        rand_area=map_bounds,
                        obstacle_list=[],
                        map=map3d)
