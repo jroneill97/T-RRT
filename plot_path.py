@@ -5,7 +5,8 @@ path_file = "path_information.txt"
 
 
 def main():
-    json_data = JsonData('saved_paths/' + path_file)
+    # 'saved_paths/' +
+    json_data = JsonData(path_file)
     _, _, _, _, path = json_data.get_path_information()
 
     plt.figure(1)
