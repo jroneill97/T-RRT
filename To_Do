@@ -1,28 +1,26 @@
+========== Thursday September 12th ==========
+o- Read through paper to see about:
+    - Where the "goal" should be
+    - Modeling vehicle kinematics?
+    - Anything about time as continuous?
+o- Install Ubuntu and Carla
+o- Text Yin about using Carla
+o- Implement Refinement Control
 
-========== Thursday August 29th ==========
-o- On the right track with acceleration
-    - See about making acceleration transition test minimize change in acceleration rather than acceleration
-    - Better way to add acceleration cost? Function to allow more constraints like this?
-o- Look at literature on multidimensional RRT*
 
-========== Wednesday August 28th ==========
-x- Write out outline for adding cost to acceleration
-^- Look at literature on multidimensional RRT*
-N- If time was continuous:
-    - Update get_cost() to interpolate between cost layers
-    - Change where constraint satisfactions are computed
-    - Where will acceleration cost be implemented?
-        - Need to create custom acceleration cost function
-
-==================================================================
-========== Summer 2019 ===========================================
-==================================================================
+========== Wednesday September 11th ==========
+x- Try to get another account on Adytia's computer
+    - If successful, download Carla and text yin about help with carla setup
+    - If not, email Ed about getting my account on Windows as admin
+x- Get jerk minimization function (probability function) to work a bit better
+^- Read through paper to see about:
+    - Where the "goal" should be
+    - Modeling vehicle kinematics?
+    - Anything about time as continuous?
 
 
 ========== Thursday August 8th ==========
-x- Write rest of text in report
-~- Incorporate Jerk to constraints?
-x- Screen capture all example videos and images
+Write rest of text in report
 
 ========== Thursday August 8th ==========
 ^- Finish text for RRT* section
@@ -49,7 +47,7 @@ x- Begin Report!! Create outline in Overleaf
 ========== Friday August 2nd ==========
 ~- Update animation type so a car object follows path
 x- Output path and scenario information to a text file
-x- Generate a rudimentary highway example and output waypoints and steering/throttle info to Carla
+x- Generate a rudamentary highway example and output waypoints and steering/throttle info to Carla
 
 ========== Thursday August 1st ==========
 ^- Update animation type so a car object follows path

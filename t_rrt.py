@@ -129,7 +129,7 @@ class TRRT(RRT):
         if dij == 0:
             dij = 0.0001
 
-        p = math.exp((-(cj-ci)/dij)/(k*t))
+        p = math.exp((-abs(cj-ci)/dij)/(k*t))
         if random.uniform(0, 1) < p:
             return [True, n_fail, t]
         else:

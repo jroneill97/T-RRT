@@ -133,6 +133,7 @@ class Lane:
                 if (x_0 <= X[i, j]) and (X[i, j] <= x_f):
                     if (y_0 <= Y[i, j]) and (Y[i, j] <= y_f):
                         a = (y_0 + y_f) / 2
+                        # grid_map.cost_map[i, j] += lane_cost
                         grid_map.cost_map[i, j] += (lane_cost / ((a - y_0) * (a - y_f))) * \
                                                    ((Y[i, j] - y_0) * (Y[i, j] - y_f))
 
