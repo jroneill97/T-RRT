@@ -129,7 +129,7 @@ class TRRT(RRT):
         if dij == 0:
             dij = 0.0001
 
-        p = math.exp((-abs(cj-ci)/dij)/(k*t))
+        p = math.exp((-abs(cj - ci) / dij) / (k * t))
         if random.uniform(0, 1) < p:
             return [True, n_fail, t]
         else:
@@ -139,6 +139,43 @@ class TRRT(RRT):
             else:
                 n_fail += 1
             return [False, n_fail, t]
+
+    def linear_transition_test(self, node, new_node, cmax, k, n_fail, my_vehicle):
+        n_fail_max = 100
+        x0 = node.x-my_vehicle.length/2
+        xf = new_node.x+my_vehicle.length/2
+        y0 = node.y-my_vehicle.width/2
+        yf = new_node.x+my_vehicle.width/2
+
+        max_cost = self.get_max_cost(x0, y0, xf, yf, node.t)
+        d, _ = self.calc_distance_and_angle(node, new_node)
+
+        if max_cost >= cmax:
+            return [False, n_fail]
+        if max_cost == 0:
+            n_fail = 0
+            return [True, n_fail]
+        if d == 0:
+            d = 0.0001
+
+        p = math.exp((-max_cost / d) / k)
+        if random.uniform(0, 1) < p:
+            return [True, n_fail]
+        else:
+            if n_fail > n_fail_max:
+                n_fail = 0
+            else:
+                n_fail += 1
+            return [False, n_fail]
+
+    def get_max_cost(self, x0, y0, xf, yf, t):
+        xspan = np.linspace(x0, xf, num=3)
+        yspan = np.linspace(y0, yf, num=3)
+        max_cost = []
+        for x in xspan:
+            for y in yspan:
+                max_cost.append(self.get_point_cost(x, y, t))
+        return max(max_cost)
 
     def get_point_cost(self, x, y):
         j = list(self.map.x_span).index(min(self.map.x_span, key=lambda temp: abs(temp - x)))
