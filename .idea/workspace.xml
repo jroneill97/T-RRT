@@ -2,12 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6e060913-4b09-4e7d-a206-17dd8e07f422" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/saved_paths/oncoming_car_lane_change.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/saved_paths/oncoming_car_lane_change_with_refinement_control.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/To_Do" beforeDir="false" afterPath="$PROJECT_DIR$/To_Do" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cost_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/cost_map.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/path_information.txt" beforeDir="false" afterPath="$PROJECT_DIR$/path_information.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/path_output.png" beforeDir="false" afterPath="$PROJECT_DIR$/path_output.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/t_rrt.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/t_rrt_time_varied.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt_time_varied.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/t_rrt_tv_version_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt_tv_version_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/refinement_control_example.png" beforeDir="false" afterPath="$PROJECT_DIR$/videos_and_images/refinement_control_example.png" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -29,15 +34,15 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/saved_paths" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/saved_paths" />
       <recent name="$PROJECT_DIR$/videos_and_images" />
-      <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/videos_and_images" />
@@ -57,7 +62,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.t_rrt_time_varied">
+  <component name="RunManager" selected="Python.plot_path">
     <configuration name="cost_map" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="T-RRT" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -165,10 +170,10 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.t_rrt_time_varied" />
         <item itemvalue="Python.plot_path" />
-        <item itemvalue="Python.t_rrt" />
+        <item itemvalue="Python.t_rrt_time_varied" />
         <item itemvalue="Python.cost_map" />
+        <item itemvalue="Python.t_rrt" />
         <item itemvalue="Python.rrt" />
       </list>
     </recent_temporary>

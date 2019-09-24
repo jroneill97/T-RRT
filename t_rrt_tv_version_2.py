@@ -232,9 +232,6 @@ class TRRT_TV(TRRT):
         if random.randint(0, 100) > self.goal_sample_rate:
             rnd = [round(random.uniform(self.min_rand_x, self.max_rand_x), 3),
                    round(random.uniform(self.min_rand_y, self.max_rand_y), 3)]
-            while self.get_point_cost(rnd[0], rnd[1], 0) >= 1:
-                rnd = [round(random.uniform(self.min_rand_x, self.max_rand_x), 3),
-                       round(random.uniform(self.min_rand_y, self.max_rand_y), 3)]
         else:  # goal point sampling
             rnd = [self.end.x, self.end.y]
         return rnd

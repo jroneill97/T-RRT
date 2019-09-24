@@ -1,11 +1,17 @@
+========== Tuesday September 24th ==========
+N - Something about how the code finds point cost is incorrect. In the transition test function it only outputs either 0 or 1 for some reason
+x - Fix logic behind getting nearest node
+x - Rethink refinement node definition and refinement minimization
+x - Implement random node via sectors
+
 ========== Thursday September 12th ==========
-o- Read through paper to see about:
+x- Read through paper to see about:
     - Where the "goal" should be
     - Modeling vehicle kinematics?
     - Anything about time as continuous?
-o- Install Ubuntu and Carla
-o- Text Yin about using Carla
-o- Implement Refinement Control
+- Install Ubuntu and Carla
+x- Text Yin about using Carla
+x- Implement Refinement Control
 
 
 ========== Wednesday September 11th ==========

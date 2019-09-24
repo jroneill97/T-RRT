@@ -77,7 +77,7 @@ class TRRT(RRT):
             d, _ = self.calc_distance_and_angle(new_node, nearest_node)
             c_near = self.get_point_cost(nearest_node.x, nearest_node.y)
             c_new = self.get_point_cost(new_node.x, new_node.y)
-            [trans_test, n_fail, T] = self.transition_test(c_near, c_new, d, cmax=0.5, k=2, t=T, nFail=n_fail)
+            [trans_test, n_fail, T] = self.transition_test(c_near, c_new, d, cmax=0.5, k=0.5, t=T, nFail=n_fail)
 
             if self.check_collision(new_node, self.obstacleList) and trans_test and \
                     not self.map.vehicle_collision(my_car, new_node.x, new_node.y, threshold=0.5):
@@ -140,41 +140,33 @@ class TRRT(RRT):
                 n_fail += 1
             return [False, n_fail, t]
 
-    def linear_transition_test(self, node, new_node, cmax, k, n_fail, my_vehicle):
-        n_fail_max = 100
+    def linear_transition_test(self, node, new_node, cmax, k, my_vehicle):
         x0 = node.x-my_vehicle.length/2
         xf = new_node.x+my_vehicle.length/2
         y0 = node.y-my_vehicle.width/2
-        yf = new_node.x+my_vehicle.width/2
+        yf = new_node.y+my_vehicle.width/2
 
         max_cost = self.get_max_cost(x0, y0, xf, yf, node.t)
         d, _ = self.calc_distance_and_angle(node, new_node)
 
         if max_cost >= cmax:
-            return [False, n_fail]
+            return False
         if max_cost == 0:
-            n_fail = 0
-            return [True, n_fail]
+            return True
         if d == 0:
             d = 0.0001
 
         p = math.exp((-max_cost / d) / k)
         if random.uniform(0, 1) < p:
-            return [True, n_fail]
-        else:
-            if n_fail > n_fail_max:
-                n_fail = 0
-            else:
-                n_fail += 1
-            return [False, n_fail]
+            return True
+        return False
 
     def get_max_cost(self, x0, y0, xf, yf, t):
-        xspan = np.linspace(x0, xf, num=3)
-        yspan = np.linspace(y0, yf, num=3)
+        xspan = np.linspace(x0, xf, num=20)
+        yspan = np.linspace(y0, yf, num=20)
         max_cost = []
-        for x in xspan:
-            for y in yspan:
-                max_cost.append(self.get_point_cost(x, y, t))
+        for i in range(0, len(xspan)):
+            max_cost.append(self.get_point_cost(xspan[i], yspan[i], t))
         return max(max_cost)
 
     def get_point_cost(self, x, y):
