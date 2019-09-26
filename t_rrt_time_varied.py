@@ -25,7 +25,7 @@ class TRRT_TV(TRRT):
     class MyCar:
         def __init__(self):
             self.length = 2
-            self.width = 2
+            self.width = 3
 
     class Node:
         def __init__(self, x, y, speed=0.0, psi=0.0, steer_rate=0.0):
@@ -68,6 +68,7 @@ class TRRT_TV(TRRT):
         self.connect_circle_dist = connect_circle_dist
         self.map = map
         self.path = []
+        self.node_list_min_child = []
         self.goal_difference = [5, 7]  # Allowable area for goal to be met
 
     def planning(self, animation=True, search_until_maxiter=False):
@@ -79,12 +80,15 @@ class TRRT_TV(TRRT):
         """
         my_car = self.MyCar()
         self.start.t = 0.0
-        self.start.speed = 5.0
+        self.start.speed = 10.0
         self.start.psi = 0.0
         self.start.throttle = 0.0
         self.get_r_bounds(self.start)
         self.get_exp_angle(self.start)
         self.node_list = [self.start]
+        self.node_list_min_child = self.node_list
+
+        n_children = 2
 
         for i in range(self.max_iter):
             ''' Find the nearest node in the node list to a random node'''
@@ -93,22 +97,27 @@ class TRRT_TV(TRRT):
 
             ''' Important: sets new node time'''
             nearest_node = self.get_best_node(new_node)
-            if nearest_node is not None:  # if there exists a valid node on the tree
-                ref_control = self.refinement_control(new_node, ratio=0.1)
-                trans_test = self.linear_transition_test(nearest_node, new_node, cmax=0.5, k=0.1, my_vehicle=my_car)
-
-                if ref_control and trans_test:
+            ref_control = self.refinement_control(nearest_node, n_children)
+            if nearest_node is not None and ref_control is True:  # if there exists a valid node on the tree
+                trans_test = self.linear_transition_test(nearest_node, new_node, cmax=0.5, k=0.05, my_vehicle=my_car)
+                collision = self.map.vehicle_collision(my_car, new_node.x, new_node.y, new_node.t, threshold=0.5)
+                # vehicle_collision(self, my_vehicle, x, y, t, threshold=0.5):
+                if trans_test and not collision:
                     new_node.parent = nearest_node
                     nearest_node.n_children += 1
+                    d, _ = self.calc_distance_and_angle(nearest_node, new_node)
                     self.get_r_bounds(new_node)
                     self.get_exp_angle(new_node)
                     self.node_list.append(new_node)
+                    self.node_list_min_child.append(new_node)
+                    if nearest_node.n_children > n_children:
+                        self.node_list_min_child.pop(self.node_list_min_child.index(nearest_node))
                     # self.rewire(new_node, near_inds)
                     self.end.t = new_node.t + self.map.t_step
                     if self.get_constraint_satisfication(new_node, self.end, goal_check=True):
                         return self.generate_final_course(len(self.node_list) - 1)
 
-            if animation and i % 50 == 0:  # draw after every 5 iterations
+            if animation and i % 1000 == 0:  # draw after every 5 iterations
                 print(i)
                 self.draw_graph(t=0.0, rnd=rnd)
 
@@ -120,22 +129,34 @@ class TRRT_TV(TRRT):
 
         return None
 
-    def minimze_jerk(self, node, accel, k=6):  # K = 41.7 to make jerk = 6 a 75% chance of passing
+    def minimize_steering_rate(self, d_psi, k=0.2):
         d_t = self.map.t_step
-        jerk = (accel - node.accel) / d_t
-        if abs(jerk) < 5:
+
+        p = math.exp((-abs(d_psi)/d_t) / k)
+        if random.uniform(0, 1) < p:
             return True
         return False
 
-    def refinement_control(self, new_node, ratio=0.1):
-        num_ref_nodes = 0
-        for node in self.node_list:
-            # if node.n_children > 3:
-            d, _ = self.calc_distance_and_angle(node, new_node)
-            if node.n_children > 1 and d < 0.25*node.r[0]:
-                num_ref_nodes += 1
-        if num_ref_nodes > ratio*len(self.node_list):
-            return False
+    def minimze_jerk(self, node, accel, k=6):  # K = 41.7 to make jerk = 6 a 75% chance of passing
+        d_t = self.map.t_step
+        jerk = (accel - node.accel) / d_t
+        if abs(jerk) < 6:
+            return True
+        return False
+
+    def refinement_control(self, node, n_children):
+        # num_ref_nodes = 0
+        # dt = self.map.t_step
+        # for node in self.node_list:
+        #     # if node.n_children > 3:
+        #     if node.n_children > 3:
+        #         for d in node.children_distances:
+        #             if d < node.speed*dt + (0.1*node.throttle)*dt**2:
+        #                 num_ref_nodes += 1
+        # if num_ref_nodes > ratio*len(self.node_list):
+        if node is not None:
+            if node.n_children > n_children:
+                return False
         return True
 
     def steer(self, rnd, nearest_node):
@@ -165,12 +186,11 @@ class TRRT_TV(TRRT):
         d_psi = psi_new - node.psi
         d_psi_dot = d_psi / d_t
 
-        within_radius = node.r[0] <= d <= node.r[1]
-        within_sector = node.exp_angle[0] <= psi_new < node.exp_angle[1]
+        # within_radius = node.r[0] <= d <= node.r[1]
+        within_sector = node.exp_angle[0]/2 <= psi_new < node.exp_angle[1]/2
 
         if not goal_check and \
-                within_radius and \
-                within_sector and \
+                self.minimize_steering_rate(d_psi, k=0.05) and \
                 self.minimze_jerk(node, accel) and \
                 self.steer_rate_range[0] <= d_psi_dot <= self.steer_rate_range[1]:
 
@@ -182,7 +202,9 @@ class TRRT_TV(TRRT):
         #  If the node being checked is the goal node, perform this check instead of the first one
         if goal_check and \
                 ((new_node.x - self.goal_difference[0]) <= node.x <= (self.goal_difference[0] + new_node.x) and
-                 (new_node.y - self.goal_difference[1]) <= node.y <= (self.goal_difference[1] + new_node.y)):
+                 (new_node.y - self.goal_difference[1]) <= node.y <= (self.goal_difference[1] + new_node.y)) and \
+                within_sector and \
+                self.steer_rate_range[0] <= d_psi_dot/2 <= self.steer_rate_range[1]:
             # self.speed_range[0] <= speed <= self.speed_range[1] and \
             # self.accel_range[0] <= accel <= self.accel_range[1] and \
             # self.steer_range[0] <= d_psi <= self.steer_range[1] and \
@@ -223,14 +245,21 @@ class TRRT_TV(TRRT):
             node.r = np.flip(node.r)
 
     def get_random_point_sector(self):
-        node_idx = random.randint(0, len(self.node_list)-1)
-        node_rnd = self.node_list[node_idx]
-        r_rnd = random.uniform(node_rnd.r[0], node_rnd.r[1])
-        exp_angle_rnd = random.uniform(node_rnd.exp_angle[0], node_rnd.exp_angle[1])
-        return [
-            node_rnd.x + r_rnd*math.cos(exp_angle_rnd),
-            node_rnd.y + r_rnd*math.sin(exp_angle_rnd)
-        ]
+        is_outside = True
+        while is_outside:
+            node_idx = random.randint(0, len(self.node_list_min_child)-1)
+            node_rnd = self.node_list_min_child[node_idx]
+            r_rnd = random.uniform(node_rnd.r[0], node_rnd.r[1])
+            exp_angle_rnd = random.uniform(node_rnd.exp_angle[0], node_rnd.exp_angle[1])
+
+            rnd = [
+                node_rnd.x + r_rnd*math.cos(exp_angle_rnd),
+                node_rnd.y + r_rnd*math.sin(exp_angle_rnd)
+            ]
+            if self.map.x_0 < rnd[0] < self.map.x_f and self.map.y_0 < rnd[1] < self.map.y_f:
+                is_outside = False
+
+        return rnd
 
     def get_random_point(self):
         if random.randint(0, 100) > self.goal_sample_rate:
@@ -375,15 +404,15 @@ class TRRT_TV(TRRT):
 
 
 def main():
-    map_bounds = [0, 75, 0, 7]  # [x_min, x_max, y_min, y_max]
+    map_bounds = [0, 100, 0, 7]  # [x_min, x_max, y_min, y_max]
     t_span = [0, 10]
     t_step = 0.5
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
     car1 = Vehicle(75, 5, -10, 0, 0, initial_map)
     # car2 = Vehicle(50, 5, 5, -np.pi/5, 0, initial_map)
-    Lane(0, 5, 300, 8, initial_map, lane_cost=0.25)
-    Lane(0, -1, 300, 2, initial_map, lane_cost=0.25)
+    Lane(0, 5, 300, 8, initial_map, lane_cost=0.5)
+    Lane(0, -1, 300, 2, initial_map, lane_cost=0.5)
     Barrier(0, 0, 300, 0.25, initial_map)
     Barrier(0, 6.75, 300, 7, initial_map)
     Lane(0, 2, 300, 5, initial_map, lane_cost=0.5)
@@ -395,8 +424,8 @@ def main():
         map3d.update_time(t)
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
 
-        Lane(0, 5, 300, 8, temp_map, lane_cost=0.25)
-        Lane(0, -1, 300, 2, temp_map, lane_cost=0.25)
+        Lane(0, 5, 300, 8, temp_map, lane_cost=0.5)
+        Lane(0, -1, 300, 2, temp_map, lane_cost=0.5)
         Barrier(0, 0, 300, 0.25, temp_map)
         Barrier(0, 6.75, 300, 7, temp_map)
         Lane(0, 2, 300, 5, temp_map, lane_cost=0.5)
@@ -406,7 +435,7 @@ def main():
     path = None
     while not path:
         time_rrt = TRRT_TV(start=[0, 5],
-                           goal=[[75, 3.5]],
+                           goal=[[100, 3.5]],
                            rand_area=map_bounds,
                            obstacle_list=[],
                            map=map3d)

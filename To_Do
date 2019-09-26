@@ -1,4 +1,18 @@
 ========== Tuesday September 24th ==========
+N - Made refinement control ensure no node has more than n number of children
+  - Also made a probability function aiming to minimize steering rate
+
+N* - Algorithm is kind of slow with the refinement control: could create a list of nodes in the tree
+     which have less than n children, then choosing a random point based off of this list.
+
+
+========== Tuesday September 24th ==========
+x - Fix issue of exploring into barriers
+    - Might be due to sectors exploring outside the map
+x - Change cost model to change in slope between points rather than slope between two points?
+
+
+========== Tuesday September 24th ==========
 N - Something about how the code finds point cost is incorrect. In the transition test function it only outputs either 0 or 1 for some reason
 x - Fix logic behind getting nearest node
 x - Rethink refinement node definition and refinement minimization

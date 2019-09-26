@@ -146,8 +146,11 @@ class TRRT(RRT):
         y0 = node.y-my_vehicle.width/2
         yf = new_node.y+my_vehicle.width/2
 
-        max_cost = self.get_max_cost(x0, y0, xf, yf, node.t)
-        d, _ = self.calc_distance_and_angle(node, new_node)
+        max_cost, point = self.get_max_cost(x0, y0, xf, yf, node.t)
+
+        dx = point[0] - node.x
+        dy = point[1] - node.y
+        d = math.sqrt(dx ** 2 + dy ** 2)
 
         if max_cost >= cmax:
             return False
@@ -156,18 +159,23 @@ class TRRT(RRT):
         if d == 0:
             d = 0.0001
 
-        p = math.exp((-max_cost / d) / k)
+        p = math.exp((-abs(max_cost)/d) / k)
         if random.uniform(0, 1) < p:
             return True
         return False
 
     def get_max_cost(self, x0, y0, xf, yf, t):
-        xspan = np.linspace(x0, xf, num=20)
-        yspan = np.linspace(y0, yf, num=20)
-        max_cost = []
+        xspan = np.linspace(x0, xf, num=50)
+        yspan = np.linspace(y0, yf, num=50)
+        cost_list = []
+        max_cost = 0
+        idx = 0
         for i in range(0, len(xspan)):
-            max_cost.append(self.get_point_cost(xspan[i], yspan[i], t))
-        return max(max_cost)
+            cost_list.append(max_cost)
+            if cost_list[-1] > max_cost:
+                max_cost = cost_list[-1]
+                idx = i
+        return [max_cost, [xspan[idx], yspan[idx]]]
 
     def get_point_cost(self, x, y):
         j = list(self.map.x_span).index(min(self.map.x_span, key=lambda temp: abs(temp - x)))

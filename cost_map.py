@@ -55,10 +55,10 @@ class CostMapWithTime:
 
     def vehicle_collision(self, my_vehicle, x, y, t, threshold=0.5):
         X, Y = self.mesh_grid
-        x_min = x - my_vehicle.length
-        x_max = x + my_vehicle.length
-        y_min = y - my_vehicle.width
-        y_max = y + my_vehicle.width
+        x_min = x - my_vehicle.length/2
+        x_max = x + my_vehicle.length/2
+        y_min = y - my_vehicle.width/2
+        y_max = y + my_vehicle.width/2
 
         if t <= self.t_array[-1]:
             t_idx = list(self.t_array).index(min(self.t_array, key=lambda temp: abs(temp - t)))
@@ -118,13 +118,13 @@ class Lane:
                 if (x_0 <= X[i, j]) and (X[i, j] <= x_f):
                     if (y_0 <= Y[i, j]) and (Y[i, j] <= y_f):
                         a = (y_0 + y_f) / 2
-                        if Y[i, j] <= a:
-                            grid_map.cost_map[i, j] += ((2*lane_cost)/(y_f-y_0))*(Y[i, j] - y_0)
-                        else:
-                            grid_map.cost_map[i, j] += -((2 * lane_cost) / (y_f - y_0)) * (Y[i, j] - y_f)
+                        # if Y[i, j] <= a:
+                        #     grid_map.cost_map[i, j] += ((2*lane_cost)/(y_f-y_0))*(Y[i, j] - y_0)
+                        # else:
+                        #     grid_map.cost_map[i, j] += -((2 * lane_cost) / (y_f - y_0)) * (Y[i, j] - y_f)
                         # grid_map.cost_map[i, j] += lane_cost
-                        # grid_map.cost_map[i, j] += (lane_cost / ((a - y_0) * (a - y_f))) * \
-                        #                            ((Y[i, j] - y_0) * (Y[i, j] - y_f))
+                        grid_map.cost_map[i, j] += (lane_cost / ((a - y_0) * (a - y_f))) * \
+                                                   ((Y[i, j] - y_0) * (Y[i, j] - y_f))
 
 
 class Vehicle:
