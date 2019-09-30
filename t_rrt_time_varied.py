@@ -16,6 +16,7 @@ from cost_map import *
 import matplotlib.pyplot as plt
 import json
 from t_rrt import TRRT
+from actor_motion import *
 
 show_animation = True
 
@@ -69,7 +70,7 @@ class TRRT_TV(TRRT):
         self.map = map
         self.path = []
         self.node_list_min_child = []
-        self.goal_difference = [5, 7]  # Allowable area for goal to be met
+        self.goal_difference = [5, 10]  # Allowable area for goal to be met
 
     def planning(self, animation=True, search_until_maxiter=False):
         """
@@ -88,7 +89,7 @@ class TRRT_TV(TRRT):
         self.node_list = [self.start]
         self.node_list_min_child = self.node_list
 
-        n_children = 2
+        n_children = 1
 
         for i in range(self.max_iter):
             ''' Find the nearest node in the node list to a random node'''
@@ -404,38 +405,57 @@ class TRRT_TV(TRRT):
 
 
 def main():
-    map_bounds = [0, 100, 0, 7]  # [x_min, x_max, y_min, y_max]
+    map_bounds = [0, 130, 0, 11]  # [x_min, x_max, y_min, y_max]
     t_span = [0, 10]
     t_step = 0.5
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-    car1 = Vehicle(75, 5, -10, 0, 0, initial_map)
-    # car2 = Vehicle(50, 5, 5, -np.pi/5, 0, initial_map)
-    Lane(0, 5, 300, 8, initial_map, lane_cost=0.5)
-    Lane(0, -1, 300, 2, initial_map, lane_cost=0.5)
+
+    ''' Get car information from the car_info folder'''
+    car_info_1 = ActorMotion(1)
+    car_info_2 = ActorMotion(2)
+    car_info_3 = ActorMotion(3)
+
+    ''' Vehicle initial conditions setup'''
+    car1 = Vehicle(2, 5.55, car_info_1.v[0][0], 0, car_info_1.psi[0][0], initial_map)
+    car2 = Vehicle(5, 5.55, car_info_2.v[0][0], 0, car_info_2.psi[0][0], initial_map)
+    car3 = Vehicle(0, 9.25, car_info_3.v[0][0], 0, car_info_3.psi[0][0], initial_map)
+
+    # Lane(0, 5, 300, 8, initial_map, lane_cost=0.5)
+    # Lane(0, -1, 300, 2, initial_map, lane_cost=0.5)
     Barrier(0, 0, 300, 0.25, initial_map)
-    Barrier(0, 6.75, 300, 7, initial_map)
-    Lane(0, 2, 300, 5, initial_map, lane_cost=0.5)
+    Barrier(0, 9.9, 300, 11, initial_map)
+    # Lane(0, 2, 300, 5, initial_map, lane_cost=0.5)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
     for t in np.arange(t_span[0], t_span[1], map3d.t_step):
         print(t)
         map3d.update_time(t)
-        temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
 
-        Lane(0, 5, 300, 8, temp_map, lane_cost=0.5)
-        Lane(0, -1, 300, 2, temp_map, lane_cost=0.5)
+        '''Add on lanes and barriers'''
+        temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
+        # Lane(0, 5, 300, 8, temp_map, lane_cost=0.5)
+        # Lane(0, -1, 300, 2, temp_map, lane_cost=0.5)
         Barrier(0, 0, 300, 0.25, temp_map)
-        Barrier(0, 6.75, 300, 7, temp_map)
-        Lane(0, 2, 300, 5, temp_map, lane_cost=0.5)
+        Barrier(0, 9.9, 300, 11, temp_map)
+        # Lane(0, 2, 300, 5, temp_map, lane_cost=0.5)
+
         car1.get_future_position(temp_map, map3d.t_step)
-        # car2.get_future_position(temp_map, map3d.t_step)
+        car2.get_future_position(temp_map, map3d.t_step)
+        car3.get_future_position(temp_map, map3d.t_step)
+
         map3d.append_time_layer(temp_map)
+
+        '''Update car velocities and heading angles from the car_info files'''
+        car1.vel, car1.psi = car_info_1.get_motion_at_t(t)
+        car2.vel, car2.psi = car_info_2.get_motion_at_t(t)
+        car3.vel, car3.psi = car_info_3.get_motion_at_t(t)
+
     path = None
     while not path:
         time_rrt = TRRT_TV(start=[0, 5],
-                           goal=[[100, 3.5]],
+                           goal=[[130, 3.5]],
                            rand_area=map_bounds,
                            obstacle_list=[],
                            map=map3d)

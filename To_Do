@@ -1,8 +1,15 @@
 ========== Tuesday September 24th ==========
-N - Made refinement control ensure no node has more than n number of children
+o - Get Carla to work
+    - Waypoint follower
+    - collision sim
+    - Replace existing trajectories with Evan's in collision sim
+
+
+========== Tuesday September 24th ==========
+x - Made refinement control ensure no node has more than n number of children
   - Also made a probability function aiming to minimize steering rate
 
-N* - Algorithm is kind of slow with the refinement control: could create a list of nodes in the tree
+x* - Algorithm is kind of slow with the refinement control: could create a list of nodes in the tree
      which have less than n children, then choosing a random point based off of this list.
 
 

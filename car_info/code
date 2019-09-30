@@ -1,0 +1,15 @@
+	    for i in range(1,4):
+		path = glob.glob('./cars/car_%d.txt' % (i))[0]
+		print(path)
+	    	fp = open(path,'r')
+		t = fp.readline()
+
+		temp = fp.readline().split(',')
+		v_temp = [float(a) for a in temp]
+		v.append(v_temp)
+
+		temp = fp.readline().split(',')
+		psi_temp = [-float(a) for a in temp]
+	    	psi.append(psi_temp)
+
+	    	fp.close()

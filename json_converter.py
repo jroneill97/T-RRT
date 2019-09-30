@@ -3,7 +3,6 @@ import numpy as np
 
 
 class JsonData:
-
     def __init__(self, file_path):
         self.file_path = file_path
         with open(self.file_path) as json_file:

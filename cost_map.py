@@ -204,7 +204,7 @@ class Vehicle:
     def get_future_position(self, grid_map, t_step):
         self.x = self.x + self.vel * math.cos(self.psi) * t_step
         self.y = self.y + self.vel * math.sin(self.psi) * t_step
-        self.psi = self.psi + self.psi_dot * t_step
+        # self.psi = self.psi + self.psi_dot * t_step
         return self.project_vehicle_cost(grid_map, self.x, self.y, self.psi)
 
 
