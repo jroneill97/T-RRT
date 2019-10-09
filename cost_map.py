@@ -118,20 +118,20 @@ class Lane:
                 if (x_0 <= X[i, j]) and (X[i, j] <= x_f):
                     if (y_0 <= Y[i, j]) and (Y[i, j] <= y_f):
                         a = (y_0 + y_f) / 2
-                        # if Y[i, j] <= a:
-                        #     grid_map.cost_map[i, j] += ((2*lane_cost)/(y_f-y_0))*(Y[i, j] - y_0)
-                        # else:
-                        #     grid_map.cost_map[i, j] += -((2 * lane_cost) / (y_f - y_0)) * (Y[i, j] - y_f)
+                        if Y[i, j] <= a:
+                            grid_map.cost_map[i, j] += -(((2*lane_cost)/(y_f-y_0))*(Y[i, j] - y_0)) + lane_cost
+                        else:
+                            grid_map.cost_map[i, j] += (((2 * lane_cost) / (y_f - y_0)) * (Y[i, j] - y_f)) + lane_cost
                         # grid_map.cost_map[i, j] += lane_cost
-                        grid_map.cost_map[i, j] += (lane_cost / ((a - y_0) * (a - y_f))) * \
-                                                   ((Y[i, j] - y_0) * (Y[i, j] - y_f))
+                        # grid_map.cost_map[i, j] += (lane_cost / ((a - y_0) * (a - y_f))) * \
+                        #                            ((Y[i, j] - y_0) * (Y[i, j] - y_f))
 
 
 class Vehicle:
     def __init__(self, x, y, vel, psi, psi_dot, grid_map):
         self.x = x
         self.y = y
-        self.vel = vel
+        self.speed = vel
         self.psi = psi
         self.psi_dot = psi_dot
 
@@ -202,9 +202,9 @@ class Vehicle:
         return grid_map.cost_map
 
     def get_future_position(self, grid_map, t_step):
-        self.x = self.x + self.vel * math.cos(self.psi) * t_step
-        self.y = self.y + self.vel * math.sin(self.psi) * t_step
-        # self.psi = self.psi + self.psi_dot * t_step
+        self.x = self.x + self.speed * math.cos(self.psi) * t_step
+        self.y = self.y + self.speed * math.sin(self.psi) * t_step
+        self.psi = 0  # self.psi + self.psi_dot * t_step
         return self.project_vehicle_cost(grid_map, self.x, self.y, self.psi)
 
 

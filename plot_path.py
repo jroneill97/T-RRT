@@ -7,17 +7,19 @@ path_file = "path_information.txt"
 def main():
     # 'saved_paths/' +
     json_data = JsonData(path_file)
-    _, _, _, _, path = json_data.get_path_information()
+    json_data.get_carla_agent_info(0.1)
+    _, _, _, _, _, path = json_data.get_path_information()
 
-    plt.figure(1)
-    plt.subplot(211)
-    plt.plot([t for (x, y, t, psi, throttle) in path], [throttle for (x, y, t, psi, throttle) in path])
-    plt.ylabel("acceleration (m/s^2)")
-    plt.xlabel("time (sec)")
-
-    plt.subplot(212)
-    plt.plot([t for (x, y, t, psi, throttle) in path], [(180 / np.pi) * psi for (x, y, t, psi, throttle) in path])
-    plt.ylabel("heading (deg)")
+    # plt.figure(1)
+    # plt.subplot(211)
+    # plt.plot([t for (x, y, t, psi, throttle) in path], [throttle for (x, y, t, psi, throttle) in path])
+    # plt.ylabel("acceleration (m/s^2)")
+    # plt.xlabel("time (sec)")
+    #
+    # plt.subplot(212)
+    # plt.plot([t for (x, y, t, psi, throttle) in path], [(180 / np.pi) * psi for (x, y, t, psi, throttle) in path])
+    # plt.ylabel("heading (deg)")
+    print([speed for (x, y, t, psi, throttle, speed) in path])
 
     while True:
         for t_idx in range(0, len(json_data.data['t']) - 1):
@@ -25,12 +27,12 @@ def main():
             plt.clf()
             plt.ion()
             plt.contourf(json_data.mesh_grid[0], json_data.mesh_grid[1], json_data.cost_map[t_idx], 20, cmap='inferno')
-            plt.plot([x for (x, y, t, psi, throttle) in path[:t_idx]],
-                     [y for (x, y, t, psi, throttle) in path[:t_idx]], '-r')
+            plt.plot([x for (x, y, t, psi, throttle, speed) in path[:t_idx]],
+                     [y for (x, y, t, psi, throttle, speed) in path[:t_idx]], '-r')
             plt.grid(True)
             plt.xlabel('x (meters)')
             plt.ylabel('y (meters)')
-            plt.title(path_file)
+            # plt.title(path_file)
             plt.show()
             plt.pause(0.5)
 

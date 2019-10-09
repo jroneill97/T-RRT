@@ -20,14 +20,17 @@ class ActorMotion:
         self.v.append(v_temp)
 
         temp = fp.readline().split(',')
-        psi_temp = [-math.radians(float(a)) for a in temp]
+        psi_temp = [math.radians(float(a)) for a in temp]
         self.psi.append(psi_temp)
 
         fp.close()
+        self.t = self.t[0]
+        self.psi = self.psi[0]
+        self.v = self.v[0]
 
     def get_motion_at_t(self, t):
-        idx = list(self.t).index(min(self.t, key=lambda temp: abs(temp - t)))
-        return [self.v[0][idx], self.psi[0][idx]]
+        idx = self.t.index(t)
+        return [self.v[idx], self.psi[idx]]
 
 
 def main():

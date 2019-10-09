@@ -25,7 +25,7 @@ class TRRT_TV(TRRT):
 
     class MyCar:
         def __init__(self):
-            self.length = 2
+            self.length = 10
             self.width = 3
 
     class Node:
@@ -54,7 +54,7 @@ class TRRT_TV(TRRT):
                  speed_range=[15, 27],
                  accel_range=[-8, 4],
                  steer_range=[-0.610865, 0.610865],
-                 steer_rate_range=[-0.2, 0.2]
+                 steer_rate_range=[-0.3, 0.3]
                  ):
         self.speed_range = speed_range
         self.accel_range = accel_range
@@ -70,7 +70,7 @@ class TRRT_TV(TRRT):
         self.map = map
         self.path = []
         self.node_list_min_child = []
-        self.goal_difference = [5, 10]  # Allowable area for goal to be met
+        self.goal_difference = [10, 6]  # Allowable area for goal to be met
 
     def planning(self, animation=True, search_until_maxiter=False):
         """
@@ -81,7 +81,7 @@ class TRRT_TV(TRRT):
         """
         my_car = self.MyCar()
         self.start.t = 0.0
-        self.start.speed = 10.0
+        self.start.speed = 15.0
         self.start.psi = 0.0
         self.start.throttle = 0.0
         self.get_r_bounds(self.start)
@@ -100,8 +100,8 @@ class TRRT_TV(TRRT):
             nearest_node = self.get_best_node(new_node)
             ref_control = self.refinement_control(nearest_node, n_children)
             if nearest_node is not None and ref_control is True:  # if there exists a valid node on the tree
-                trans_test = self.linear_transition_test(nearest_node, new_node, cmax=0.5, k=0.05, my_vehicle=my_car)
-                collision = self.map.vehicle_collision(my_car, new_node.x, new_node.y, new_node.t, threshold=0.5)
+                trans_test = self.linear_transition_test(nearest_node, new_node, cmax=0.75, k=0.025, my_vehicle=my_car)
+                collision = self.map.vehicle_collision(my_car, new_node.x, new_node.y, new_node.t, threshold=0.75)
                 # vehicle_collision(self, my_vehicle, x, y, t, threshold=0.5):
                 if trans_test and not collision:
                     new_node.parent = nearest_node
@@ -204,8 +204,7 @@ class TRRT_TV(TRRT):
         if goal_check and \
                 ((new_node.x - self.goal_difference[0]) <= node.x <= (self.goal_difference[0] + new_node.x) and
                  (new_node.y - self.goal_difference[1]) <= node.y <= (self.goal_difference[1] + new_node.y)) and \
-                within_sector and \
-                self.steer_rate_range[0] <= d_psi_dot/2 <= self.steer_rate_range[1]:
+                within_sector:
             # self.speed_range[0] <= speed <= self.speed_range[1] and \
             # self.accel_range[0] <= accel <= self.accel_range[1] and \
             # self.steer_range[0] <= d_psi <= self.steer_range[1] and \
@@ -325,9 +324,9 @@ class TRRT_TV(TRRT):
         node = self.node_list[goal_ind]
 
         while node.parent is not None:
-            path.append([node.x, node.y, node.t, node.psi, node.throttle])
+            path.append([node.x, node.y, node.t, node.psi, node.throttle, node.speed])
             node = node.parent
-        path.append([node.x, node.y, node.t, node.psi, node.throttle])
+        path.append([node.x, node.y, node.t, node.psi, node.throttle, node.speed])
         self.path = path
         return path
 
@@ -381,6 +380,7 @@ class TRRT_TV(TRRT):
         t = []
         heading = []
         throttle = []
+        speed = []
         temp_path = self.path
         temp_path.reverse()
 
@@ -389,8 +389,9 @@ class TRRT_TV(TRRT):
             t.append(point[2])
             heading.append(point[3])
             throttle.append(point[4])
+            speed.append(point[5])
 
-        path = {'waypoints': waypoints, 'heading': heading, 'throttle': throttle}
+        path = {'waypoints': waypoints, 'heading': heading, 'throttle': throttle, 'speed': speed}
         cost = []
         for idx in range(0, len(map3d.cost_map3d)):
             cost.append(map3d.cost_map3d[idx][0].tolist())
@@ -405,9 +406,11 @@ class TRRT_TV(TRRT):
 
 
 def main():
-    map_bounds = [0, 130, 0, 11]  # [x_min, x_max, y_min, y_max]
     t_span = [0, 10]
     t_step = 0.5
+    lane_cost = 0.75
+    lane_width = 3.7057  # m
+    map_bounds = [0, 130, 0, 12]  # [x_min, x_max, y_min, y_max]
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
 
@@ -417,45 +420,51 @@ def main():
     car_info_3 = ActorMotion(3)
 
     ''' Vehicle initial conditions setup'''
-    car1 = Vehicle(2, 5.55, car_info_1.v[0][0], 0, car_info_1.psi[0][0], initial_map)
-    car2 = Vehicle(5, 5.55, car_info_2.v[0][0], 0, car_info_2.psi[0][0], initial_map)
-    car3 = Vehicle(0, 9.25, car_info_3.v[0][0], 0, car_info_3.psi[0][0], initial_map)
+    # car1 = Vehicle(30, 1.5*lane_width, car_info_1.v[0]-5, 0, 0, initial_map)
+    car2 = Vehicle(10, 1.5*lane_width, car_info_2.v[0]+1, 0, 0, initial_map)
+    car3 = Vehicle(0,  2.5*lane_width, car_info_3.v[0], 0, 0, initial_map)
 
-    # Lane(0, 5, 300, 8, initial_map, lane_cost=0.5)
-    # Lane(0, -1, 300, 2, initial_map, lane_cost=0.5)
+    ''' Initializing lane lines and barriers'''
+    Lane(0, 0*lane_width, 300, 1*lane_width, initial_map, lane_cost)  # lanes are now the actual length of the lane
+    Lane(0, 1*lane_width, 300, 2*lane_width, initial_map, lane_cost)
+    Lane(0, 2*lane_width, 300, 3*lane_width, initial_map, lane_cost)
+
     Barrier(0, 0, 300, 0.25, initial_map)
-    Barrier(0, 9.9, 300, 11, initial_map)
-    # Lane(0, 2, 300, 5, initial_map, lane_cost=0.5)
+    Barrier(0, 11.75, 300, 12, initial_map)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
     for t in np.arange(t_span[0], t_span[1], map3d.t_step):
+        t = round(t, 3)
         print(t)
         map3d.update_time(t)
 
         '''Add on lanes and barriers'''
         temp_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
-        # Lane(0, 5, 300, 8, temp_map, lane_cost=0.5)
-        # Lane(0, -1, 300, 2, temp_map, lane_cost=0.5)
-        Barrier(0, 0, 300, 0.25, temp_map)
-        Barrier(0, 9.9, 300, 11, temp_map)
-        # Lane(0, 2, 300, 5, temp_map, lane_cost=0.5)
 
-        car1.get_future_position(temp_map, map3d.t_step)
+        Lane(0, 0 * lane_width, 300, 1 * lane_width, temp_map, lane_cost)
+        Lane(0, 1 * lane_width, 300, 2 * lane_width, temp_map, lane_cost)
+        Lane(0, 2 * lane_width, 300, 3 * lane_width, temp_map, lane_cost)
+
+        Barrier(0, 0, 300, 0.25, temp_map)
+        Barrier(0, 11.75, 300, 12, temp_map)
+
+        # car1.get_future_position(temp_map, map3d.t_step)
         car2.get_future_position(temp_map, map3d.t_step)
         car3.get_future_position(temp_map, map3d.t_step)
 
         map3d.append_time_layer(temp_map)
 
         '''Update car velocities and heading angles from the car_info files'''
-        car1.vel, car1.psi = car_info_1.get_motion_at_t(t)
-        car2.vel, car2.psi = car_info_2.get_motion_at_t(t)
-        car3.vel, car3.psi = car_info_3.get_motion_at_t(t)
+        # car1.speed, car1.psi = car_info_1.get_motion_at_t(t)
+        car2.speed, car2.psi = car_info_2.get_motion_at_t(t)
+        car2.speed *= 1.5
+        car3.speed, car3.psi = car_info_3.get_motion_at_t(t)
 
     path = None
     while not path:
-        time_rrt = TRRT_TV(start=[0, 5],
-                           goal=[[130, 3.5]],
+        time_rrt = TRRT_TV(start=[0, 1.5*lane_width],
+                           goal=[[130, 1.5*lane_width]],
                            rand_area=map_bounds,
                            obstacle_list=[],
                            map=map3d)
@@ -475,7 +484,7 @@ def main():
         plt.clf()
         fig = plt.figure()
         time_rrt.draw_graph(t=t, rnd=None)
-        plt.plot([x for (x, y, t, psi, throttle) in path], [y for (x, y, t, psi, throttle) in path], '-r')
+        plt.plot([x for (x, y, t, psi, throttle, speed) in path], [y for (x, y, t, psi, throttle, speed) in path], '-r')
         # my_car.plot(x, y, psi)
         plt.pause(t_step / 2)
         plt.show(block=True)
