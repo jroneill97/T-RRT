@@ -45,3 +45,5 @@
   - **Note:** Remember to rename ```car_0.txt``` if you intend to save the most recent path information so it doesn't get overwritten.
 - ```car_[1-3].txt``` are actor vehicles with motion identical to those in Evan's 4D Dikjstra highway scenario
 
+## Requirements
+- Python 3.5
