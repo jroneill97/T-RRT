@@ -29,7 +29,6 @@ class RRT:
             self.x = x
             self.y = y
             self.parent = None
-            self.goals = []
 
     def __init__(self, start, goal, obstacle_list,
                  rand_area, expand_dis=1.0, goal_sample_rate=5, max_iter=500):
@@ -43,9 +42,7 @@ class RRT:
 
         """
         self.start = self.Node(start[0], start[1])
-        self.end = self.Node(goal[0][0], goal[0][1])
-        for point in goal:
-            self.end.goals.append(point)
+        self.end = self.Node(goal[0], goal[1])
         self.expand_dis = expand_dis
         self.goal_sample_rate = goal_sample_rate
         self.max_iter = max_iter

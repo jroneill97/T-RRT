@@ -1,3 +1,8 @@
+"""
+Aquires actor motion information from ./car_info/ and
+returns their encoded velocity and heading angles
+"""
+
 import glob
 import math
 
