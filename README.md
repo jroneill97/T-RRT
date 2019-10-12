@@ -17,6 +17,9 @@
 - Aquires JSON-formatted data generated in ```t_rrt_time_varied.py```
 - Writes necessary ego vehicle path information to ```./car_info/car_0.txt``` for use with the Carla driving simulator
 
+``` cost_map.py```
+- Defines map, map layers, along with barriers, lanes, and vehicle objects.
+
 ```rrt.py```
 - Unmodified RRT searching algorithm written by AtsushiSakai(@Atsushi_twi)
 
