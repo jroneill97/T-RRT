@@ -1,4 +1,15 @@
 # Time-Varying, Transition-Based, Rapidly-exploring Random Trees:
+## General Overview:
+- Starting velocity of the ego vechile is 10 m/s, with 0 m/s^2 acceleration
+- The ego vehicle has the following constraints:
+  - 70 degree steer range
+  - 0.2 rad/s steer rate
+  - (-8 to 4) m/s^2 acceleration
+  - (15 to 27) m/s speed
+  - Jerk and steer rate are minimized within the code
+
+- Figures and media are located in ```./videos_and_images/```. Refer to the readme file within the folder for descriptions of each file.
+- Information about the actor vehicles can be found in ``` ./car_info/```. Refer to the readme within the folder for a description of how to navigate through the folder.
 
 ## File Descriptions:
 ``` t_rrt_time_varied.py``` 
