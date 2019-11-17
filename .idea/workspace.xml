@@ -3,6 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="6e060913-4b09-4e7d-a206-17dd8e07f422" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_info/car_0.txt" beforeDir="false" afterPath="$PROJECT_DIR$/car_info/car_0.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/path_information.txt" beforeDir="false" afterPath="$PROJECT_DIR$/out/path_information.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/t_rrt_time_varied.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt_time_varied.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_partial_knowledge.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_partial_knowledge.png" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -53,7 +60,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.plot_path">
+  <component name="RunManager" selected="Python.t_rrt_time_varied">
     <configuration name="cost_map" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="T-RRT" />
       <option name="INTERPRETER_OPTIONS" value="" />

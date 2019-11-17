@@ -142,7 +142,7 @@ class TRRT_TV(TRRT):
         return None
 
     ''' Steer rate minimization function'''
-    def minimize_steering_rate(self, d_psi, k=0.05):
+    def minimize_steering_rate(self, d_psi, k=0.001):
         d_t = self.map.t_step
 
         p = math.exp((-abs(d_psi)/d_t) / k)
@@ -151,7 +151,7 @@ class TRRT_TV(TRRT):
         return False
 
     ''' Jerk minimization function'''
-    def minimize_jerk(self, node, accel, k=1.5):  # K = 41.7 to make jerk = 6 a 75% chance of passing
+    def minimize_jerk(self, node, accel, k=1):  # K = 41.7 to make jerk = 6 a 75% chance of passing
         d_t = self.map.t_step
         jerk = (accel - node.accel) / d_t
         p = math.exp(-abs(jerk) / k)
@@ -427,7 +427,7 @@ def main():
         map3d.append_time_layer(temp_map)
 
         '''Update car velocities and heading angles from the car_info files'''
-        # car1.speed, car1.psi = car_info_1.get_motion_at_t(t)
+        car1.speed, car1.psi = car_info_1.get_motion_at_t(t)
         car2.speed, car2.psi = car_info_2.get_motion_at_t(t)
         car2.speed *= 1.5
         car3.speed, car3.psi = car_info_3.get_motion_at_t(t)
