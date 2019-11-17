@@ -1,4 +1,4 @@
-## Car Information
+# Car Information
 This folder contains a number of ```.txt``` files associated with different vehicles in the simulation. Here is a description of each of them.
 
 **Note on car information format:**  The ```.txt``` files contain three rows of data. The top row represents time (seconds). The second and third rows represent velocity (m/s) and heading angle (rad) respectively, at the associated time. The initial positions of vehicles 1-3 can be found in ```car_info.xlsx```.
