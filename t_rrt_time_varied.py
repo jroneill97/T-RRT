@@ -54,17 +54,21 @@ class TRRT_TV(TRRT):
                  speed_range=None,
                  accel_range=None,
                  steer_range=None,
-                 steer_rate_range=None
+                 steer_rate_range=None,
+                 children_per_node=None
                  ):
         if steer_rate_range is None:
-            steer_rate_range = [-0.3, 0.3]
+            steer_rate_range = [-0.2, 0.2]
         if steer_range is None:
             steer_range = [-0.610865, 0.610865]
         if accel_range is None:
             accel_range = [-8, 4]
         if speed_range is None:
             speed_range = [15, 27]
+        if children_per_node is None:
+            children_per_node = 1
 
+        self.children_per_node = children_per_node
         self.speed_range = speed_range
         self.accel_range = accel_range
         self.steer_range = steer_range
@@ -80,9 +84,10 @@ class TRRT_TV(TRRT):
         self.path = []
         self.node_list_min_child = []
         self.goal_difference = [10, 6]  # Allowable area for goal to be met
+        self.goal = goal
 
     ''' Main path planning function'''
-    def planning(self, start_speed=15.0, start_psi=0.0, start_throttle=0.0, children_limit=1, animation=True,
+    def planning(self, start_speed=15.0, start_psi=0.0, start_throttle=0.0, animation=True,
                  search_until_maxiter=False):
         my_car = self.MyCar()
         self.start.t = 0.0
@@ -101,11 +106,11 @@ class TRRT_TV(TRRT):
 
             ''' Important: sets new node time'''
             nearest_node = self.get_best_node(new_node)
-            ref_control = self.refinement_control(nearest_node, children_limit)
+            ref_control = self.refinement_control(nearest_node, self.children_per_node)
             if nearest_node is not None and ref_control is True:
 
                 '''Perform the transition test for the two nodes. Note: adjust k to adjust willingness to change lane'''
-                trans_test = self.linear_transition_test(nearest_node, new_node, cmax=0.75, k=0.01, my_vehicle=my_car)
+                trans_test = self.linear_transition_test(nearest_node, new_node, cmax=0.75, k=0.005, my_vehicle=my_car)
 
                 collision = self.map.vehicle_collision(my_car, new_node.x, new_node.y, new_node.t, threshold=0.75)
                 if trans_test and not collision:
@@ -118,7 +123,7 @@ class TRRT_TV(TRRT):
 
                     #  Add the new node to the list of children if the number of children is less than the limit
                     self.node_list_min_child.append(new_node)
-                    if nearest_node.n_children > children_limit:
+                    if nearest_node.n_children > self.children_per_node:
                         self.node_list_min_child.pop(self.node_list_min_child.index(nearest_node))
                     self.end.t = new_node.t + self.map.t_step
                     if self.get_constraint_satisfication(new_node, self.end, goal_check=True):
@@ -137,7 +142,7 @@ class TRRT_TV(TRRT):
         return None
 
     ''' Steer rate minimization function'''
-    def minimize_steering_rate(self, d_psi, k=0.2):
+    def minimize_steering_rate(self, d_psi, k=0.05):
         d_t = self.map.t_step
 
         p = math.exp((-abs(d_psi)/d_t) / k)
@@ -146,7 +151,7 @@ class TRRT_TV(TRRT):
         return False
 
     ''' Jerk minimization function'''
-    def minimize_jerk(self, node, accel, k=1):  # K = 41.7 to make jerk = 6 a 75% chance of passing
+    def minimize_jerk(self, node, accel, k=1.5):  # K = 41.7 to make jerk = 6 a 75% chance of passing
         d_t = self.map.t_step
         jerk = (accel - node.accel) / d_t
         p = math.exp(-abs(jerk) / k)
@@ -198,8 +203,8 @@ class TRRT_TV(TRRT):
 
         #  If the node being checked is the goal node, perform this check instead of the first one
         if goal_check and \
-                ((new_node.x - self.goal_difference[0]) <= node.x <= (self.goal_difference[0] + new_node.x) and
-                 (new_node.y - self.goal_difference[1]) <= node.y <= (self.goal_difference[1] + new_node.y)) and \
+                ((self.goal[0] - self.goal_difference[0]) <= node.x <= (self.goal_difference[0] + self.goal[0]) and
+                 (self.goal[1] - self.goal_difference[1]) <= node.y <= (self.goal_difference[1] + self.goal[1])) and \
                 within_sector:
             new_node.speed = speed
             new_node.psi = psi_new
@@ -296,18 +301,20 @@ class TRRT_TV(TRRT):
             plt.ion()
             t_idx = list(self.map.t_array).index(t)
             # plt.plot(rnd[0], rnd[1], "^k")
-            plt.contourf(self.map.mesh_grid[0], self.map.mesh_grid[1], self.map.cost_map3d[t_idx][0], 20, cmap='viridis')
+            plt.contourf(self.map.mesh_grid[0], self.map.mesh_grid[1],
+                         self.map.cost_map3d[t_idx][0], 100, cmap='terrain')
             for node in self.node_list:
                 if node.parent:
                     plt.plot([node.x, node.parent.x],
                              [node.y, node.parent.y],
-                             "-y")
+                             "-k")
             plt.axis([self.min_rand_x, self.max_rand_x, self.min_rand_y, self.max_rand_y])
             plt.grid(True)
             plt.xlabel('x (meters)')
             plt.ylabel('y (meters)')
             plt.draw()
             plt.pause(0.01)
+            plt.grid(False)
             plt.show()
         else:
             plt.clf()
@@ -318,7 +325,7 @@ class TRRT_TV(TRRT):
             # if rnd is not None:
             plt.plot(rnd[0], rnd[1], "^k")
             plt.contour(self.map.mesh_grid[0], self.map.mesh_grid[1], self.map.cost_map3d[t_idx][0], 20,
-                         cmap='viridis')
+                         cmap='terrain')
             for node in self.node_list:
                 if node.parent:
                     ax.plot3D([node.x, node.parent.x],
@@ -369,10 +376,11 @@ class TRRT_TV(TRRT):
 def main():
     t_span = [0, 10]
     t_step = 0.5
-    lane_cost = 0.3  # lane line cost (usually around 0.25 to 0.5)
+    lane_cost = 0.3  # lane line cost (usually between 0.25 to 0.5)
     lane_width = 2  # m
     map_bounds = [0, 130, 0, 6]  # [x_min, x_max, y_min, y_max]
 
+    children_per_node = 1  # The maximum allowable number of children per node on the tree
     starting_speed = 10.0  # Starting speed (m/s)
 
     initial_map = CostMap(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3])
@@ -430,8 +438,9 @@ def main():
                            goal=[130, 1.5*lane_width],
                            rand_area=map_bounds,
                            obstacle_list=[],
-                           map=map3d)
-        path = time_rrt.planning(starting_speed, children_limit=1, animation=True, search_until_maxiter=False)
+                           map=map3d,
+                           children_per_node=children_per_node)
+        path = time_rrt.planning(starting_speed, animation=True, search_until_maxiter=False)
 
     ''' Output the path and map information to ./out/path_information.txt'''
     time_rrt.write_to_file(map3d)
@@ -442,14 +451,12 @@ def main():
         print("found path!!")
 
     ''' Show resulting path and save the image to ./out/path_output.png'''
-    if show_animation:
-        plt.clf()
-        fig = plt.figure()
-        time_rrt.draw_graph(t=t, rnd=None)
-        plt.plot([x for (x, y, t, psi, throttle, speed) in path], [y for (x, y, t, psi, throttle, speed) in path], '-r')
-        plt.pause(t_step / 2)
-        plt.show(block=True)
-        fig.savefig('./out/path_output.png')
+    plt.clf()
+    time_rrt.draw_graph(t=t, rnd=None)
+    plt.plot([x for (x, y, t, psi, throttle, speed) in path], [y for (x, y, t, psi, throttle, speed) in path], '-r')
+    plt.pause(t_step / 2)
+    plt.show(block=True)
+    # fig.savefig('./out/path_output.png')
 
 
 if __name__ == '__main__':

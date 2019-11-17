@@ -25,7 +25,7 @@ def main():
             plt.figure(2)
             plt.clf()
             plt.ion()
-            plt.contourf(json_data.mesh_grid[0], json_data.mesh_grid[1], json_data.cost_map[t_idx], 20, cmap='inferno')
+            plt.contourf(json_data.mesh_grid[0], json_data.mesh_grid[1], json_data.cost_map[t_idx], 100, cmap='terrain')
             plt.plot([x for (x, y, t, psi, throttle, speed) in path[:t_idx]],
                      [y for (x, y, t, psi, throttle, speed) in path[:t_idx]], '-r')
             plt.grid(True)
