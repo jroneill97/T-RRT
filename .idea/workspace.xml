@@ -2,14 +2,27 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6e060913-4b09-4e7d-a206-17dd8e07f422" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/car_info/car_0.txt" beforeDir="false" afterPath="$PROJECT_DIR$/car_info/car_0.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/path_information.txt" beforeDir="false" afterPath="$PROJECT_DIR$/out/path_information.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/t_rrt_time_varied.py" beforeDir="false" afterPath="$PROJECT_DIR$/t_rrt_time_varied.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_partial_knowledge.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_partial_knowledge.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/3d-t-rrt-example.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/jagged-acceleration-curve.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/lane-change-no-car.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/lane-change-with-car.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/lane-line.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/minimal work flaw.PNG" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/RRT_four_way_intersection.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/RRT_four_way_intersection.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge-(2).mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge_animation.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_full_knowledge_creation.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_partial_knowledge_animation.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/paper_media/highway_RRT_partial_knowledge_creation.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/refinement_control_example.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/riding-lane-line.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/simple-lane-change.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/t-rrt.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/t-rrt.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/videos_and_images/vehicle-cost-model.png" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -111,11 +124,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$USER_HOME$/Software/PythonRobotics/PathPlanning/RRT" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../PythonRobotics/PathPlanning/RRT" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$USER_HOME$/Software/PythonRobotics/PathPlanning/RRT/rrt.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../PythonRobotics/PathPlanning/RRT/rrt.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />

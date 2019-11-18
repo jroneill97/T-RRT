@@ -62,11 +62,11 @@ class TRRT_TV(TRRT):
         if steer_range is None:
             steer_range = [-0.610865, 0.610865]
         if accel_range is None:
-            accel_range = [-8, 4]
+            accel_range = [-8, 5]
         if speed_range is None:
-            speed_range = [15, 27]
+            speed_range = [15, 35]
         if children_per_node is None:
-            children_per_node = 1
+            children_per_node = 0
 
         self.children_per_node = children_per_node
         self.speed_range = speed_range
@@ -83,7 +83,7 @@ class TRRT_TV(TRRT):
         self.map = map
         self.path = []
         self.node_list_min_child = []
-        self.goal_difference = [10, 6]  # Allowable area for goal to be met
+        self.goal_difference = [15, 6]  # Allowable area for goal to be met
         self.goal = goal
 
     ''' Main path planning function'''
@@ -110,7 +110,7 @@ class TRRT_TV(TRRT):
             if nearest_node is not None and ref_control is True:
 
                 '''Perform the transition test for the two nodes. Note: adjust k to adjust willingness to change lane'''
-                trans_test = self.linear_transition_test(nearest_node, new_node, cmax=0.75, k=0.005, my_vehicle=my_car)
+                trans_test = self.linear_transition_test(nearest_node, new_node, cmax=0.5, k=0.005, my_vehicle=my_car)
 
                 collision = self.map.vehicle_collision(my_car, new_node.x, new_node.y, new_node.t, threshold=0.75)
                 if trans_test and not collision:
@@ -142,7 +142,7 @@ class TRRT_TV(TRRT):
         return None
 
     ''' Steer rate minimization function'''
-    def minimize_steering_rate(self, d_psi, k=0.001):
+    def minimize_steering_rate(self, d_psi, k=0.01):
         d_t = self.map.t_step
 
         p = math.exp((-abs(d_psi)/d_t) / k)
@@ -151,7 +151,7 @@ class TRRT_TV(TRRT):
         return False
 
     ''' Jerk minimization function'''
-    def minimize_jerk(self, node, accel, k=1):  # K = 41.7 to make jerk = 6 a 75% chance of passing
+    def minimize_jerk(self, node, accel, k=5):  # K = 41.7 to make jerk = 6 a 75% chance of passing
         d_t = self.map.t_step
         jerk = (accel - node.accel) / d_t
         p = math.exp(-abs(jerk) / k)
@@ -203,9 +203,9 @@ class TRRT_TV(TRRT):
 
         #  If the node being checked is the goal node, perform this check instead of the first one
         if goal_check and \
-                ((self.goal[0] - self.goal_difference[0]) <= node.x <= (self.goal_difference[0] + self.goal[0]) and
+                ((self.goal[0] - self.goal_difference[0]) <= node.x and
                  (self.goal[1] - self.goal_difference[1]) <= node.y <= (self.goal_difference[1] + self.goal[1])) and \
-                within_sector:
+                 within_sector:
             new_node.speed = speed
             new_node.psi = psi_new
             new_node.throttle = accel
@@ -376,7 +376,7 @@ class TRRT_TV(TRRT):
 def main():
     t_span = [0, 10]
     t_step = 0.5
-    lane_cost = 0.3  # lane line cost (usually between 0.25 to 0.5)
+    lane_cost = 0.35  # lane line cost (usually between 0.25 to 0.5)
     lane_width = 2  # m
     map_bounds = [0, 130, 0, 6]  # [x_min, x_max, y_min, y_max]
 
@@ -401,7 +401,7 @@ def main():
     Lane(0, 2*lane_width, 300, 3*lane_width, initial_map, lane_cost)
 
     Barrier(0, 0, 300, 0.25, initial_map)
-    Barrier(0, 11.75, 300, 12, initial_map)
+    Barrier(0, 5.75, 300, 6, initial_map)
 
     map3d = CostMapWithTime(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3], t_step=t_step)
 
@@ -418,7 +418,7 @@ def main():
         Lane(0, 2 * lane_width, 300, 3 * lane_width, temp_map, lane_cost)
 
         Barrier(0, 0, 300, 0.25, temp_map)
-        Barrier(0, 11.75, 300, 12, temp_map)
+        Barrier(0, 5.75, 300, 6, temp_map)
 
         car1.get_future_position(temp_map, map3d.t_step)
         car2.get_future_position(temp_map, map3d.t_step)
