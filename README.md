@@ -50,17 +50,8 @@
 ```./videos_and_images/```
 - Various saved results generated throughout the development of the searching algorithm
 
-```./videos_and_images/paper_media/```
-- Contains results created for use in the recent paper
-
-```./videos_and_images/carla_results/```
-- Contains videos and images of RRT and Dijkstra computed paths in collision and no-collision scenarios.
-
 ``` ./car_info/```
 - Contains ego and actor vehicle information for use in the Carla driving simulator
-- ```car_0.txt``` is the ego vehicle, with motion information updated automatically after running ```t_rrt_time_varied.py```
-  - **Note:** Remember to rename ```car_0.txt``` if you intend to save the most recent path information so it doesn't get overwritten.
-- ```car_[1-3].txt``` are actor vehicles with motion identical to those in Evan's 4D Dikjstra highway scenario
 
 ## Requirements
 - Python 3.5
