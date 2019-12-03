@@ -22,20 +22,6 @@ class CostMap:
         self.cost_map = np.zeros((len(self.x_span), len(self.y_span)))
         self.mesh_grid = np.meshgrid(self.x_span, self.y_span)
 
-    def get_cost_at_point(self, x, y):
-        pass
-
-    def gaussian_raster(self, x, y):
-        vol = 1
-        sigma = 1
-        raster = np.zeros((len(self.x_span), len(self.y_span)))
-        for i in range(0, len(self.x_span)):
-            for j in range(0, len(self.y_span)):
-                raster[i, j] = math.exp(-(((self.x_span[i] - x)**2) / (2*sigma**2) + ((self.y_span[j] - y) ** 2 / 2 * sigma ** 2))) / vol
-        # X, Y = np.meshgrid(self.x_span, self.y_span)
-        # raster = math.exp(-(((X - x) ** 2) / (2 * sigma ** 2) + ((Y - y) ** 2 / 2 * sigma ** 2))) / vol
-        self.cost_map += raster
-
 
 class CostMapWithTime:
     def __init__(self, x_0, x_f, y_0, y_f, t_step=0.01):
@@ -78,29 +64,25 @@ class CostMapWithTime:
         self.cost_map3d.append((map.cost_map, self.t))
         self.t_array.append(self.t)
 
-    def get_cost_at_point(self, x, y):
-        # Needs to: get the cost map at the current time layer then get_cost_at_point for that layer
-        pass
-
     def update_time(self, t_in):
         self.t = round(t_in, 3)
 
 
 class Barrier:
-    def __init__(self, x_0, y_0, x_f, y_f, grid_map):
+    def __init__(self, x_0, y_0, x_f, y_f, cost_map):
         self.x_0 = x_0
         self.x_f = x_f
         self.y_0 = y_0
         self.y_f = y_f
 
-        X, Y = grid_map.mesh_grid
+        X, Y = cost_map.mesh_grid
 
-        for i in range(0, len(grid_map.x_span)):
-            for j in range(0, len(grid_map.y_span)):
+        for i in range(0, len(cost_map.x_span)):
+            for j in range(0, len(cost_map.y_span)):
 
                 if (x_0 <= X[i, j]) and (X[i, j] <= x_f):
                     if (y_0 <= Y[i, j]) and (Y[i, j] <= y_f):
-                        grid_map.cost_map[i, j] += 1
+                        cost_map.cost_map[i, j] += 1
 
 
 class Lane:
