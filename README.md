@@ -1,3 +1,10 @@
+
+Autonomous vehicles in production today likely employ light-based detection systems such as LIDAR (light detection and ranging) in processing their surrounding environment. Since the mid-20th century, LIDAR technology has quickly developed into likely the most feasible method for implementation into the world of self-driving vehicles. High fidelity sensors can produce quite precise representations of the world around the vehicle, with one caveat: anything behind an obstacle in line with the line of sight of the LIDAR sensor will inherently be left undetected, causing the driverless vehicle to have an incomplete knowledge of the surrounding environment. This could lead to potentially fatal situations if an obstacle like a pedestrian or vehicle is obstructed by another object. The ultimate goal of this project is to design a solution to this major drawback of the LIDAR sensor platform using a decentralized network of vehicles that can inform any one vehicle of objects on the road which may be outside of its view. 
+
+This Evan and Jack worked to develop path planning algorithms necessary for the self-driving vehicles, beginning with a time-varying implementation of Dijkstra's minimum-cost pathfinding algorithm using parameterized cost maps. They then branched off to develop two more viable pathfinding algorithms. Evan modified Dijkstra's algorithm to create a four-dimensional pathfinding algorithm, and Jack modified the Rapidly exploring Random Trees searching algorithm (RRT*) to account for operational limitations of the driverless vehicle. These pathfinding algorithms are currently being finalized. They will be used in conjunction with the Carla simulator to test validate the importance of a decentralized network of vehicles in avoiding collisions.
+
+(Feel free to reach out to me if you would like to read the full report)
+
 # Time-Varying, Transition-Based, Rapidly-exploring Random Trees:
 ## General Overview:
 - Starting velocity of the ego vechile is 10 m/s, with 0 m/s^2 acceleration
